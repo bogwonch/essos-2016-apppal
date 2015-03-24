@@ -1,0 +1,24 @@
+\ProvidesPackage{localstyle}
+\usepackage{defaultstyle}
+
+%% Acronyms
+\includepackage{acronym}
+\renewcommand{\acsfont}[1]{\textsc{#1}}
+\acrodef{pus}{potentially unwanted software}
+
+\includepackage{algorithm2e}
+\SetKwComment{tcc}{\# }{}
+\SetKwComment{Anotate}{}{}
+\SetKwProg{Fn}{}{\string:}{}
+\SetKwProg{Block}{}{}{}
+\SetKwFor{For}{for}{\string:}{}
+\SetKwFor{ForAny}{$\exists$}{\string:}{}
+\SetKwFor{ForAll}{$\forall$}{\string:}{}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\SetKwSwitch{Match}{With}{Other}{match}{\string:}{with}{otherwise}{}{}
+\SetKwSwitch{Switch}{Case}{Other}{switch}{\string:}{case}{otherwise}{}{}
+\SetKwIF{If}{ElseIf}{Else}{if}{\string:}{else if}{else}{}
+\SetKwFor{Where}{where}{\string:}{}
+\SetKwFunction{Return}{return}
+
+

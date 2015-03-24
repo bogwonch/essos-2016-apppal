@@ -1,0 +1,69 @@
+\ProvidesPackage{defaultstyle}
+
+% Use a package if it hasn't already been loaded
+\newcommand{\includepackage}[2][]{\@ifpackageloaded{#2}{}{\usepackage[#1]{#2}}}
+
+%% Math
+\includepackage{amsmath,amssymb}
+\includepackage{proof}
+
+%% Fonts
+\includepackage{lmodern}
+\includepackage{relsize}
+\includepackage{fontspec}
+\includepackage{unicode-math}
+
+% \includepackage{microtype}
+% \microtypesetup{%
+%   protrusion=true,
+%   expansion,
+%   letterspace=300
+% }
+
+%% Images
+\includepackage{graphicx}
+\setkeys{Gin}{%
+  width=\linewidth,
+  totalheight=\textheight,
+  keepaspectratio
+}
+
+%% Colors
+\includepackage[usenames,dvipsnames]{xcolor}
+
+%% Code
+\includepackage{listings}
+\lstset{%
+  basicstyle=\tt\small,
+  keywordstyle=\ttfamily\bfseries\small,
+  columns=flexible,
+  tabsize=2,
+  showstringspaces=true,
+  %numbers=left,
+  numberstyle=\tiny\ttfamily\color{Gray},
+  commentstyle=\ttfamily\color{Gray}
+}
+\newcommand{\code}[2][]{\lstinline[#1]{#2}}
+
+%% Tables
+\includepackage{booktabs}
+
+%% Links
+\includepackage{hyperref}
+\hypersetup{%
+  unicode=true,
+  hidelinks
+}
+
+%% Bibliography
+\includepackage[square,numbers]{natbib}
+
+% %% Titling and subtitles
+% \includepackage{titling}
+% \newcommand{\subtitle}[1]{%
+%   \posttitle{%
+%     \par\end{center}%
+%     \begin{center}\large#1\end{center}%
+%     \vskip{0.5em}%
+%   }%
+% }
