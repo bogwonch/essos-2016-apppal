@@ -34,8 +34,8 @@
 %% Code
 \includepackage{listings}
 \lstset{%
-  basicstyle=\tt\small,
-  keywordstyle=\ttfamily\bfseries\small,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\ttfamily\bfseries\footnotesize,
   columns=flexible,
   tabsize=2,
   showstringspaces=true,
@@ -44,6 +44,8 @@
   commentstyle=\ttfamily\color{Gray}
 }
 \newcommand{\code}[2][]{\lstinline[#1]{#2}}
+% Autoref line numebers
+\providecommand*{\lstnumberautorefname}{line} 
 
 %% Tables
 \includepackage{booktabs}
@@ -57,13 +59,3 @@
 
 %% Bibliography
 \includepackage[square,numbers]{natbib}
-
-% %% Titling and subtitles
-% \includepackage{titling}
-% \newcommand{\subtitle}[1]{%
-%   \posttitle{%
-%     \par\end{center}%
-%     \begin{center}\large#1\end{center}%
-%     \vskip{0.5em}%
-%   }%
-% }

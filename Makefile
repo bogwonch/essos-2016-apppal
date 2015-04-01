@@ -1,6 +1,9 @@
 all: paper.pdf
-	latexmk -xelatex paper
+	latexmk -xelatex -quiet paper
 	latexmk -c
+
+view: paper.pdf
+	open paper.pdf
 
 paper.pdf: $(wildcard *.bib) $(wildcard *.tex) $(wildcard *.sty)
 
