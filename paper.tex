@@ -5,8 +5,8 @@
 
 \newcommand{\comment}[1]{}%\textsf{#1}}
 
-\title{AppPAL for Android}
-\subtitle{Capturing and Checking App Installation Policies}
+\title{AppPAL for Android\\
+Capturing and Checking App Installation Policies}
 \author{Joseph Hallett \and David Aspinall}
 \date{\today}
 
@@ -16,14 +16,16 @@
 \begin{abstract}
   % \begin{itemize}
   %   \item \comment{Sentence 1: State the problem}
-  When a user wants to pick an app on Android they are forced to judge apps based only on the information presented to them by the store.
+  When a user buys an app on Android they can only judge available apps based only on the information presented to them by the store.
   %   \item \comment{Sentence 2: Why is it an interesting problem}
   Employers must rely on employees using company devices properly to enforce security policies about apps at work.
-  Whilst some users spend time to pick apps with care others don't and become frustrated at apps that steal personal information.
+  Some users spend time to pick apps with care others don't.
+  This can cause frustration when they realise what data the apps have access to.
   %   \item \comment{Sentence 3: What does my solution achieve}
-  We present AppPAL: a policy language that can enforce app installation policies using statements from trusted third parties and delegation relationships.
+  We present AppPAL: a policy language that can enforce app installation policies.
+  Policies use statements from third parties and delegation relationships.
   %   \item \comment{Sentence 4: What follows from my solution}
-  This gives us a rigorous and flexible framework for enforcing and comparing and app policies and the trust relationships surrounding them.
+  This gives us a rigorous and flexible framework for enforcing and comparing and app policies; and the trust relationships surrounding them.
   % \end{itemize}
 \end{abstract}
 
@@ -33,7 +35,9 @@
 %\comment{The problem is\ldots}
 How do you pick which apps to install on your phone?  
 App stores give some information about their apps; such as permissions and review scores.
-Ultimately the decision which apps to use must be made by the user, however.
+Android apps show a confusing list of permissions (\autoref{fig:facebook}).
+Whilst improving, users don't all understand how this relates to their device~\citep{Felt:2012hm,Thompson:2013eb}.
+Ultimately the decision which apps to use must be made by the user.
 
 Not all apps are suitable. 
 There is a large amount of \ac{pus} available for Android~\citep{Truong:2014bi,Svajcer:2013tp}. 
@@ -49,6 +53,12 @@ This is error-prone and can be inconsistent.
 A better solution is to use a logic of authorization.
 The policy can be written in the logic and enforced automatically.
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.3\linewidth]{figures/facebook.png}
+  \caption{Security information presented when a user downloads the Facebook app.}
+\label{fig:facebook}
+\end{figure}
 
 %\comment{My contribution is\ldots}
 We present AppPAL, an authorization logic for reasoning about Android apps.
@@ -57,17 +67,24 @@ It allows us to reason about apps using statements from third parties.
 We can express trust relationships in these speakers and use constraints to perform additional checks at evaluation time.
 This allows us to enforce deeper and more complex policies than existing policy tools like Kirin~\citep{Enck:2009ko}.
 
+Specifically we have:
 \begin{itemize}
-  %\item \comment{Specifically I have}
-  \item Described several scenarios where an authorization logic could replace informal policies for companies and users (\autoref{sec:problem}.) 
-    \comment{Provide forward refs saying where we do this and about what}
-  \item Shown how app installation policies can be expressed in AppPAL
-    including how a corporate \ac{byod} policy could be written, and how a user's personal security policy could be formalized (\autoref{sec:idea}.)
+  \item 
+    Described a scenario where a user has a policy they want to enforce for their employees~(\autoref{sec:problem}.) 
+    We show how the trust relationships in a system can be difficult to see;
+      and how AppPAL makes the trust between users explicit.
+  \item 
+    Shown how the user's policy could be implemented using AppPAL~(\autoref{sec:idea}); 
+      and describe what AppPAL would check for an app to meet this policy.
+    
   \item Implemented the AppPAL language.  
-    Our implementation runs on Android and the JVM (\autoref{sec:details}.)
+    Our implementation runs on Android (\autoref{sec:details}.)
+    We show how we have tailored the language to Android (\autoref{ssec:language}),
+      how we evaluate it (\autoref{ssec:eval}),
+      and some idiomatic policies (\autoref{ssec:idioms}.)
 \end{itemize}
 
-\section{The Problem\comment{1 page}}
+\section{The problem\comment{1 page}}
 \label{sec:problem}
 
 Suppose \emph{Alice} works for \emph{Bob}.
@@ -133,7 +150,7 @@ A pictorial representation, is given in \autoref{fig:bobs_policy}; color is used
 
 \begin{figure}
   \includegraphics{figures/bob-policy.eps}
-  \caption{Pictoral representation of Alice's app install policy.}
+  \caption{Pictorial representation of Alice's app install policy.}
 \label{fig:bobs_policy}
 \end{figure}
 
@@ -169,7 +186,7 @@ We present AppPAL as a new version of SecPAL, targeting apps on mobile devices.
 \end{lstlisting}
 
 In \autoref{lst:corporate_1} Alice gives Bob the ability to specify whether an \code{App} (a variable) \code{isInstallable} (a predicate).
-She allows him to delegate the decision further if he choses (\code{can-say inf}).
+She allows him to delegate the decision further if he chooses (\code{can-say inf}).
 Next in \autoref{lst:corporate_2} Bob specifies his concerns as policies to be met (the \code{isMetBy()} predicate that takes an app as its argument).
 If Bob can be convinced all these policies are met then he will say the \code{App isInstallable}.
 In \autoref{lst:corporate_3} and \autoref{lst:corporate_4} Bob specifies that an app meets the \code{reputable-source-policy} if the \code{App isBuyable};
@@ -220,6 +237,7 @@ The parser is implemented using ANTLR4.
 Code, tests, and prebuilt APKs are available from Github\footnote{\url{https://github.com/bogwonch/AppPAL}}.
 
 \subsection{The Language}
+\label{ssec:language}
 
 The structure of an AppPAL assertion is shown in \autoref{fig:assertion}.
 
@@ -258,6 +276,9 @@ Specifically we define the following predicates:
     Splitting policies allows greater control of how each one is checked.
     We can delegate checking a policy to an expert using the \code{can-say} statement.
     We can specify more detailed checks using the \code{can-act-as} statements.
+
+  \item[\texttt{Policy shownIsMetBy(Evidence, App)}]
+    A variant of the \texttt{isMetBy} statement that allows some evidence (a proof) to be given that shows the policy is met.
 \end{description}
 
 We also add the following constraint functions which check simple properties of the app:
@@ -280,6 +301,9 @@ In every case the check can be done by examining the app itself.
 
   \item[\texttt{hasVersion(App)} : Int]
     Gets the version number of an app.
+
+  \item[\texttt{released(App)} : Date]
+    Checks when the app was last updated and released.
 \end{description}
 
 We also add some constraints that do more complex checks:
@@ -301,12 +325,12 @@ We also add some constraints that do more complex checks:
     This constraint function allows us to incorporate these tools into AppPAL policies.
 \end{description}
 
-\subsection{Evaluation}
+subsection{Evaluation}
 
 To evaluate AppPAL we implement the SecPAL evaluation rules shown in \autoref{fig:rules}.
 We do not use the DatalogC~\citep{Li:2003ix}~based translation and evaluation algorithm suggested by \citeauthor{Becker:2006vh}.
 Rather we implement the rules directly in Java. 
-Brief pseudocode is given in \autoref{fig:pseudocode}
+Brief pseudo-code is given in \autoref{fig:pseudocode}
 Like \citeauthor{Becker:2006vh} we make use of an assertion context to store known statements.
 We also store intermediate results to avoid re-computation.
 On a mobile device memory is at a premium.
@@ -354,7 +378,7 @@ This gives us greater control of the evaluation and how the assertion context is
 For example, when checking the \code{isAnApp} predicate; 
   we can fetch the assertion that the subject is an app based on the app in question.
 Similarly when we use a statement from \emph{Bob} that \emph{Google-Play can-say} whether an app is purchasable;
-  it is sensible to go fetch from the store whether the app is salable and make Google say it then and there.
+  it is sensible to go fetch from the store whether the app is saleable and make Google say it then and there.
 
 In SecPAL there is no notion of type.
 All entities are either constants (effectively strings) or variables.
@@ -366,8 +390,6 @@ Consequently there is no need to check them as potential speakers of \emph{can-s
 Similarly if a constant never appears as a subject of a statement, as most speakers don't,
   there is no need to check it as a possible subject for a \emph{can-act-as} statement.
 We pre-process the assertion context to find \emph{voiced} and \emph{subject} constants.
-This allows us to cut the time spent searching for proofs.
-
 
 \begin{figure}
 \begin{minipage}[b]{0.5\linewidth}
@@ -419,13 +441,163 @@ def checkConditions(ac, rt, a, d)
 \label{fig:pseudocode}
 \end{figure}
 
-\subsection{Policy Idioms}
+\subsection{Policy Examples}
 \label{ssec:idioms}
 
+In this section we give examples of policies and queries and show how they can be implemented in AppPAL.
+
+\begin{description}
+  \item[App white-listing by an IT department]
+    Inside Bob's company employees in the IT department may white-list certain apps as installable.
+    To do this Bob delegates to them to decide if something is installable.
+    \begin{lstlisting}
+"bob" says "it-department" can-say 0 App isInstallable.
+    \end{lstlisting}
+    Charlie and Diveena work in the IT department.
+    When they have checked an app they say it is installable.
+    \begin{lstlisting}
+"bob" says "charlie" can-act-as "it-department".
+"bob" says "diveena" can-act-as "it-department".
+
+"charlie" says "com.facebook.katana" isInstallable.
+"diveena" says "org.thoughtcrime.securesms" isInstallable.
+    \end{lstlisting}
+
+  \item[Overpriviliged applications]
+    Alice is particularly worried about apps stealing her data.
+    She knows that certain apps need certain permissions.
+    For example a photography app needs access to the camera.
+    She checks each app's permissions carefully for things that seem unusual.
+
+    Alice's policy can be implemented by checking the permissions of the app, using constraints.
+    \begin{lstlisting}
+"alice" says App isInstallable
+   if "permissionsPolicy" isMetBy(App).
+"alice" says "permissionsPolicy" isMetBy(App)
+   if App isAnApp
+   where
+      category(App, "Photography"),
+      hasPermission(App, "ACCESS_COARSE_LOCATION") = False,
+      hasPermission(App, "CAMERA") = True.
+    \end{lstlisting}
+
+    Discovering the \emph{normal} permissions for an app can be done by mining large stores of apps, or apps a user has previously installed.
+    Alternately tools like Stowaway~\citep{Felt:2011kj} could be integrated to check apps.
+
+  \item[Digital Evidence]
+    In \autoref{ssec:language} we described how digital evidence could be used to decide if policies are met.
+    Suppose a digital evidence generating tool, such as \emph{Evicheck}, can be used to check a policy.
+    For example that no audio can be recorded without the users consent~\citep{Seghir:2014uq}.
+    Using this tool someone generates a proof certificate that this property is met.
+    This could be the developer of the app, a third party certification service, or someone else;
+      when we check the proof we will find out if it is valid or not.
+    \begin{lstlisting}
+"alice" says Anyone can-say 0 
+  "recording-consent" shownIsMetBy(Evidence, App).
+
+"skb" says "recording-consent" 
+  shownIsMetBy("evicheck://evidence123", App).
+
+"alice" says "recording-consent" isMetBy(App)
+  if "recording-consent" shownIsMetBy(Evidence, App)
+  where
+    evicheckCheckEvidence(Evidence, App) = True. 
+    \end{lstlisting}
+    In the example here Alice allows anyone to present her with evidence for her policy.
+    A \ac{skb} offers an some evidence, and Alice accepts it as if it checks out.
+\end{description}
 
 \section{Related work \comment{1--2 pages}}
 
+There has been a great amount of work on developing app analysis tools for Android.  
+Tools such as Stowaway~\citep{Felt:2011kj} detect overprivileged apps.
+TaintDroid~\citep{Enck:2010uw} and FlowDroid~\citep{Fritz:2013vi} can do taint and control flow analysis; sometimes even between app components.
+Other tools like QUIRE~\citep{Bugiel:2012ui} can find privilege escalation attacks between entire apps.
+ScanDAL~\citep{Kim:2012vt} and SCanDroid~\citep{Fuchs:2009vi} help detect privacy leaks.
+Appscopy~\citep{Feng:kPGZr_ja} searches for specific kinds of malware.
+Tools like DroidRanger~\citep{Zhou:2012tb} scan app markets for malicious apps. 
+Many others exist checking and certifying other aspects of app behaviour.
+
+One tool, Kirin~\citep{Enck:2009ko}, also created a policy language and tool for enforcing app installation policies.
+Kirin's policies were concerned with preventing malware.
+Policy authors could specify combinations of permissions that should not appear together.
+For example an author might wish to stop malware sending premium rate text messages.
+To do this they restrict an app having both the \texttt{SEND\_SMS} and \texttt{WRITE\_SMS} permissions (\autoref{fig:kirin}).
+Using this approach they found vulnerabilities in Android, but were ultimately limited by being restricted to permissions and broadcast events.
+\begin{figure}
+\begin{lstlisting}
+restrict permission [SEND_SMS] and permission [WRITE_SMS]
+\end{lstlisting}
+\begin{lstlisting}
+"user" says "no-write-send-sms" isMetBy(App)
+  where hasPermission(App, "SEND_SMS") = False.
+"user" says "no-write-send-sms" isMetBy(App)
+  where hasPermission(App, "WRITE_SMS") = False.
+\end{lstlisting}
+\caption{Kirin and AppPAL policies for stopping apps monetized by premium rate text messages.}
+\label{fig:kirin}
+\end{figure}
+
+Whilst this approach is great for malware, it is less suitable for finding \ac{pus}.
+The behaviours and permissions \ac{pus} apps display aren't necessarily malicious.
+One user may consider apps which need in-app-purchases to play malware, but another may enjoy them.
+AppPAL tries to stop these \ac{pus} apps.
+Because we can use external checking tools which go further than permissions checks, our policies can be richer.
+By allowing delegation relationships we can understand the provenance and trust relationships in these rules.
+
+Work by \citeauthor{Sadeh:2014vq} looked at modelling users' willingness to grant different kinds of permissions~\citep{Sadeh:2014vq}.
+They found four clusters of different users each with different kinds of policies:
+  conservatives who don't like granting many permissions,
+  advanced users who seem to have more complex policies,
+  unconcerned users who'll comfortably grant anything,
+  and fence-sitters (about half of all users) who seemed not to really care the majority of the time.
+This suggests that users are applying policies and do care how apps behave.
+Further more \citeauthor{Sadeh:2014vq} speculate that the fence-sitters seemed not to care because of \emph{warning fatigue}.
+This suggests a system like AppPAL that can reduce user interaction with permission warnings might be interesting.
+Using a policy unconcerned and fence-sitting users could take up more privacy preserving policies without having to change their behavior.
+
+We picked SecPAL as the basis for AppPAL because it was readable, extensible, and seemed to be a good fit for the problem we were trying to solve~\citep{Hallett:2014un}.
+Further more attempts to apply it to other areas had already succeeded~\citep{Aziz:2011vt,Humphrey:2007wc}.
+Other policy languages such as RT~\citep{Li:2003ua}, or Cassandra~\citep{Becker:2004il} might also have made a good starting point.
+However neither had the precise set of features we we're looking for (namely explicit speakers and external checking functions).
+Other work on SecPAL has added various features such as existential quantification~\citep{Becker:2009vt} and ultimately becoming the DKAL family of policy languages~\citep{Gurevich:2008fz,Gurevich:Qo5E3M3}.
+\citeauthor{Gurevich:2008fz} showed that SecPAL was a subset of DKAL (minus the \emph{can-act-as} statement).
+DKAL also contains more modalities than \emph{says}.
+
+
 \section{Conclusions and further work \comment{$\frac{1}{2}$ page}}
+
+We have presented AppPAL: an authorization logic for describing app installation policies.
+The language is implemented in Java and runs on Android using a custom evaluation algorithm.
+This allows us to enforce app installation policies on Android devices.
+We've shown how the language can be used to describe an app installation policy;
+  and given brief descriptions of how other policies might be described.
+
+Further work is required to tightly integrate AppPAL into Android.
+The obvious place to put it would be as a \emph{required checker}: a program that checks all apps before installation.
+Google currently use this API to check for known malware and jailbreak apps.
+We would like AppPAL to sit there and check apps on the basis of policies.
+Unfortunately the API is protected and it would require the phone to be rooted to run there.
+
+Developing, and testing, policies for users is a key next step.
+Here we described a policy being specified by a company boss.
+For most end-users writing a policy in a formal language is too much work.
+Ad-blocking software works by users subscribing to filter policies written by experts\footnote{EasyList is a popular choice and the default in most ad-blocking software. They offer many different policies for specific use-cases however. \url{https://easylist.adblockplus.org/en/}}.
+We can imagine a similar scheme working well for app installation policies.
+Users subscribe to different policies by experts (e.g. no tracking apps, nothing with adult content, no spammy in-app-purchase apps).
+Optionally they can customize them further.
+
+We should also attempt to learn policies from existing users behavior.
+Given app usage data, from a project like Carat~\citep{Oliner:2013ht}, we could identify security conscious users.
+If we can infer these users policies we may be able to describe new policies that the less technical users may want.
+Given a set of apps one user has already installed, we could learn policies about what their personal installation policy is.
+This may help stores show users apps they're more likely to buy, and users apps that already behave as they want.
+
+AppPAL is a powerful language for describing app installation policies.
+It gives us a framework for describing and evaluating policies for Android apps.
+The work provides new ways for users to enforce their own rules about how apps should behave.
+Users policies can be enforced more reliably, and with less interaction;
+thus making apps more pleasant and safer for everyone.
 
 \bibliographystyle{plainnat}
 \bibliography{paper}
