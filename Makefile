@@ -1,5 +1,5 @@
 all: paper.pdf
-	latexmk -xelatex -quiet paper
+	latexmk -pdf -quiet paper
 	latexmk -c
 
 view: paper.pdf

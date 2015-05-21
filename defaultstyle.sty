@@ -10,8 +10,8 @@
 %% Fonts
 \includepackage{lmodern}
 \includepackage{relsize}
-\includepackage{fontspec}
-\includepackage{unicode-math}
+% \includepackage{fontspec}
+% \includepackage{unicode-math}
 
 % \includepackage{microtype}
 % \microtypesetup{%
@@ -34,8 +34,9 @@
 %% Code
 \includepackage{listings}
 \lstset{%
-  basicstyle=\ttfamily\footnotesize,
-  keywordstyle=\ttfamily\bfseries\footnotesize,
+  basicstyle=\ttfamily,
+  keywordstyle=\ttfamily\slshape,
+  stringstyle=\sffamily,
   columns=flexible,
   tabsize=2,
   showstringspaces=true,
@@ -46,6 +47,14 @@
 \newcommand{\code}[2][]{\lstinline[#1]{#2}}
 % Autoref line numebers
 \providecommand*{\lstnumberautorefname}{line} 
+% SecPAL
+\lstdefinelanguage{apppal}{%
+  morekeywords={says,if,where,False,True},%
+  otherkeywords={=,0,inf,can-say,can-act-as},%
+  morestring=[b]"%
+}[keywords,comments,strings]
+\lstset{language=apppal}
+
 
 %% Tables
 \includepackage{booktabs}
@@ -57,5 +66,24 @@
   hidelinks
 }
 
+\renewcommand*{\equationautorefname}{Equation}%
+\renewcommand*{\footnoteautorefname}{footnote}%
+\renewcommand*{\itemautorefname}{item}%
+\renewcommand*{\figureautorefname}{Figure}%
+\renewcommand*{\tableautorefname}{Table}%
+\renewcommand*{\partautorefname}{Part}%
+\renewcommand*{\appendixautorefname}{Appendix}%
+\renewcommand*{\chapterautorefname}{Chapter}%
+\renewcommand*{\sectionautorefname}{Section}%
+\renewcommand*{\subsectionautorefname}{Subsection}%
+\renewcommand*{\subsubsectionautorefname}{Subsubsection}%
+\renewcommand*{\paragraphautorefname}{Paragraph}%
+\renewcommand*{\subparagraphautorefname}{Subparagraph}%
+\renewcommand*{\FancyVerbLineautorefname}{line}%
+\renewcommand*{\theoremautorefname}{Theorem}%
+\renewcommand*{\pageautorefname}{page}%
+
 %% Bibliography
 \includepackage[square,numbers]{natbib}
+
+

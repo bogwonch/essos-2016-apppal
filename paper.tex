@@ -16,11 +16,11 @@ Capturing and Checking App Installation Policies}
 \begin{abstract}
   % \begin{itemize}
   %   \item \comment{Sentence 1: State the problem}
-  When a user buys an app on Android they can only judge available apps based only on the information presented to them by the store.
+  Users must judge apps based only on the information presented to them by the store.
   %   \item \comment{Sentence 2: Why is it an interesting problem}
-  Employers must rely on employees using company devices properly to enforce security policies about apps at work.
+  Employers rely on employees using company devices appropriately to enforce security policies at work.
   Some users spend time to pick apps with care others don't.
-  This can cause frustration when they realise what data the apps have access to.
+  This may cause frustration when they realise what data the apps have access to.
   %   \item \comment{Sentence 3: What does my solution achieve}
   We present AppPAL: a policy language that can enforce app installation policies.
   Policies use statements from third parties and delegation relationships.
@@ -33,25 +33,32 @@ Capturing and Checking App Installation Policies}
 \label{sec:introduction}
 
 %\comment{The problem is\ldots}
-How do you pick which apps to install on your phone?  
+Finding good apps can be tricky.
+Users need to work out which apps are well written.
+They also need to find the apps which suit how they want to use their phone.
+This can be difficult.
+It isn't obvious how apps use the data each has access to.
+
 App stores give some information about their apps; such as permissions and review scores.
 Android apps show a confusing list of permissions (\autoref{fig:facebook}).
-Whilst improving, users don't all understand how this relates to their device~\citep{Felt:2012hm,Thompson:2013eb}.
-Ultimately the decision which apps to use must be made by the user.
+Users don't all understand how permissions relate to their device~\citep{Felt:2012hm,Thompson:2013eb}.
+Ultimately the decision which apps to use must be made by a human.
 
 Not all apps are suitable. 
-There is a large amount of \ac{pus} available for Android~\citep{Truong:2014bi,Svajcer:2013tp}. 
+A large amount of \ac{pus} is being propagated for Android devices~\citep{Truong:2014bi,Svajcer:2013tp}. 
 Employees are increasingly using their own phones for work (the \ac{byod} scheme.)
-Their company may want to restrict which apps their employees can use.
+A employers may wish to restrict which apps their employees can use.
 The \ac{ciso} or IT department may set a policy to prevent information leaks.
-Some users worry apps will misuse their personal data.
-They avoid apps which can access their location, or contact data.
+Some users worry apps will misuse their personal data;
+  such a user avoids apps which can access their location, or address book.
 They apply their own personal security policy when downloading apps.
 
-Currently these policies are enforced by hand.
-This is error-prone and can be inconsistent.
-A better solution is to use a logic of authorization.
-The policy can be written in the logic and enforced automatically.
+These policies are enforced by hand, if at all.
+This is error-prone and mistakes can be made.
+We believe this can be bettered.
+An alternative would be to write the policy down and make the computer do it.
+To implement this we can use a logic of authorization.
+The policy may be written in the logic and enforced automatically.
 
 \begin{figure}
   \centering
@@ -63,11 +70,28 @@ The policy can be written in the logic and enforced automatically.
 %\comment{My contribution is\ldots}
 We present AppPAL, an authorization logic for reasoning about Android apps.
 The language is an instantiation of SecPAL~\citep{Becker:2006vh} tailored to making statements about apps.
-It allows us to reason about apps using statements from third parties.
-We can express trust relationships in these speakers and use constraints to perform additional checks at evaluation time.
-This allows us to enforce deeper and more complex policies than existing policy tools like Kirin~\citep{Enck:2009ko}.
+The language allows us to reason about apps using statements from third parties.
+The implementation allows us to enforce the policies on a device.
+We can express trust relationships amongst these parties; use constraints to perform additional checks.
+This lets us enforce deeper and more complex policies than existing tools such as Kirin~\citep{Enck:2009ko}.
 
-Specifically we have:
+Using AppPAL we can make statements about apps:
+\begin{lstlisting}
+"Alice" says "com.rovio.angrybirds" isInstallable.
+\end{lstlisting}
+We can delegate decisions to others:
+\begin{lstlisting}
+"Alice" says "Bob" can-say 0 App isCool.
+\end{lstlisting}.
+We can run analysis tools, and solve constraints:
+\begin{lstlisting}
+"Claire" says App isMalware
+  if App isAnApp
+  where
+    virusScanner(App) = True.
+\end{lstlisting}
+
+Specifically we:
 \begin{itemize}
   \item 
     Described a scenario where a user has a policy they want to enforce for their employees~(\autoref{sec:problem}.) 
@@ -82,76 +106,68 @@ Specifically we have:
     We show how we have tailored the language to Android (\autoref{ssec:language}),
       how we evaluate it (\autoref{ssec:eval}),
       and some idiomatic policies (\autoref{ssec:idioms}.)
+
+  \item When things go wrong we also need to attribute blame.
+    Authorization logic can help make trust relationships explicit.
+    In \autoref{ssec:language} we show a recent example of a broken trust relationship,
+    and how our authorization logic makes the problem explicit.
+
 \end{itemize}
 
-\section{The problem\comment{1 page}}
+\section{Enforcing a policy at work}
 \label{sec:problem}
 
-Suppose \emph{Alice} works for \emph{Bob}.
-Bob allows Alice to use her personal phone as a work phone, but he has some specific concerns.
+Suppose \emph{Alice} works for her \emph{em\/}ployer \emph{Emma}.
+Emma allows Alice to use her personal phone as a work phone, but she has some specific concerns.
 \begin{itemize}
   \item Alice shouldn't have any apps that can track her movements.
     The testing labs are at a secret location and it mustn't be leaked.
-  \item Apps should come from a reputable source, such as the Play store.
-  \item Bob uses an \ac{av} program by McAfee. 
+  \item Apps should come from a reputable source, such as the Google Play Store.
+  \item Emma uses an \ac{av} program by McAfee. 
     It should check all apps before they're installed.
 \end{itemize}
 
-To ensure this policy is fully met Alice could promise to follow it; but this is error-prone---what if she makes a mistake or misses something?
-Bob's policy could be implemented using existing tools.
-\emph{Google's Device Policy for Android}\footnote{\url{https://play.google.com/store/apps/details?id=com.google.android.apps.enterprise.dmagent}}
-  could configure Alice's device to disallow apps from outside the Play Store.
-Various tools~\citep{Backes:2012vm,Jeon:2012ki,Hornyack:2011wq} can control the permissions or data an app can get.
+To ensure this policy is fully met Alice could promise to follow it.
+Perhaps she might even sign a document promising to do so.
+This is error-prone---what if she makes a mistake or misses something?
+Emma's policy could be implemented using existing tools.
+The enterprise tool \emph{Google's Device Policy for Android}\footnote{\url{https://play.google.com/store/apps/details?id=com.google.android.apps.enterprise.dmagent}}
+  could configure Alice's device to disallow apps from outside the Google Play Store.
+Various tools such as AppGuard~\citep{Backes:2012vm}, Dr.~Android~\&~Mr.~Hide~\citep{Jeon:2012ki} or AppFence~\citep{Hornyack:2011wq} can control the permissions or data an app can get.
 These could be used to used to ensure no location data is ever obtained.
-Alternately other tools~\citep{Enck:2009ko,Fritz:2013vi,Gordon:2015et} could check that the locations are ever leaked to the web.
-Various anti-virus programs are available for Android---one could be installed on Alice's phone.
+Alternately other tools like Kirin~\citep{Enck:2009ko}, Flowdroid~\citep{Fritz:2013vi} or DroidSafe~\citep{Gordon:2015et} could check that the locations are ever leaked to the web.
+Various anti-virus programs are available for Android---one could be installed on Alice's phone checking against McAfee's signatures.
 
-Whilst we \emph{could} implement Bob's policy using existing tools, it isn't a great solution.
-It isn't flexible, Alice needs to alter and remove the software on her phone if Bob changes his policy or she changes jobs.
-It isn't clear what an app must do to be installed, or what checks must have been done if it already has been put on the phone.
-The link between Alice, the user; Bob, the policy setter; and the tools Bob trusts to implement his policy isn't immediately apparent.
+\begin{figure}
+\includegraphics{figures/overview.eps}
+\caption{Ecosystem of devices and stores with AppPAL.}
+\label{fig:ecosystem}
+\end{figure}
 
-This last point is particularly pertinent with respect to \textsc{CVE-2015-2077}.
-In 2015 Lenovo was found to be shipping laptops with the \emph{Superfish} malware pre-installed.
-Lenovo had also installed an \ac{av} package on their laptops; this \ac{av} did recognise Superfish as malware.
-Unfortunately they had configured it to ignore Superfish\footnote{The malware was an ad framework designed to show users products similar to those they viewed on the web.  Unfortunately it did so by man-in-the-middling all SSL traffic using a shared private key.}.
+Whilst we \emph{could} implement Emma's policy using existing tools, it isn't a great solution.
+It isn't flexible, Alice needs to alter and remove the software on her phone if Emma changes her policy or she changes jobs.
+It isn't clear what an app must do to be installed, or what checks have been done if it already has been put on the phone.
+The link between Alice, the user; Emma, the policy setter; and the tools Emma trusts to implement her policy isn't immediately apparent.
 
-From a user's perspective there was a delegation of trust to Lenovo to detect malware.
-Lenovo then delegated further to McAfee to supply the antivirus; but left an exception that they would allow Superfish.
-A user might wonder where the breach of trust occurred and who is to blame?  
-Is it the \ac{av} failing to spot the malware? 
-Has someone else configured something incorrectly?
-How should they fix the problem?
 
-If we write this in the AppPAL policy language the cause of the breach of trust becomes apparent; as does the fix.
-\begin{lstlisting}[numbers=left, escapeinside={@}{@}, label={lst:lenovo}]
-"user" says "lenovo" can-say inf File isSafe. @\label{lst:lenovo_trust}@
-"lenovo" says "mcafee" can-say inf File isSafe.
-"lenovo" says "C:\System\superfish" isSafe. @\label{lst:lenovo_unsafe}@
-\end{lstlisting}
-The fault lies with \autoref{lst:lenovo_unsafe}.  
-Lenovo has caused the problem (they \emph{said} it was safe).
-The fix is to revoke this statement, or to revoke \autoref{lst:lenovo_trust} and find a different \ac{av} supplier.
-
-It is important to stress that we are not trying to solve the problem of detecting malware.
-There are many tools, and much research, that already does this.
-Our problem is different. 
+Our research looks at the problem of picking software.
 Given there are some apps you want and others you don't:
-  how can you express your preferences in such a way that they can be enforced automatically.
-Further more how can we show the trust relationships used to make these decisions clearly and precisely.
+  how can you express your preferences in such a way that they can be enforced automatically?
+How can we translate policy documents from natural language into something machine checkable?
+Furthermore how can we show the trust relationships used to make these decisions clearly and precisely?
 
-\section{My idea \comment{2 pages}}
+\section{Expressing Policies in AppPAL}
 \label{sec:idea}
 
-Returning to Alice and Bob's dilemma in \autoref{sec:problem}, we propose a solution.
-Instead of using several different tools to enforce Bob's policy disjointedly, we use an authorization logic.
-In \autoref{lst:corporate} we give an AppPAL policy implementing Bob's app concerns on Alice's phone.
-A pictorial representation, is given in \autoref{fig:bobs_policy}; color is used to split statements by each speaker.
+Returning to Alice and Emma's dilemma in \autoref{sec:problem}, we propose a solution.
+Instead of using several different tools to enforce Emma's policy disjointedly, we use an authorization logic.
+In \autoref{lst:corporate} we give an AppPAL policy implementing Emma's app concerns on Alice's phone.
+A pictorial representation, is given in \autoref{fig:emmas_policy}; color is used to split statements by each speaker.
 
 \begin{figure}
   \includegraphics{figures/bob-policy.eps}
   \caption{Pictorial representation of Alice's app install policy.}
-\label{fig:bobs_policy}
+\label{fig:emmas_policy}
 \end{figure}
 
 AppPAL is an instantiation of SecPAL~\citep{Becker:2006vh} for app installation policies. 
@@ -160,62 +176,63 @@ It has a clear and readable syntax, as well as rich mechanisms for delegation an
 SecPAL has already been used as a basis for other policy languages in areas such as privacy preferences~\citep{Becker:2009ula} and data-sharing~\citep{Aziz:2011vt}.
 We present AppPAL as a new version of SecPAL, targeting apps on mobile devices.
 
-\begin{lstlisting}[label={lst:corporate}, 
-                   caption={An AppPAL policy implementing Bob's security requirements},
-                   float,
-                   numbers=left,
+\begin{figure}
+\begin{lstlisting}[numbers=left,
                    escapeinside={@}{@}]
-"alice" says "bob" can-say inf App isInstallable. @\label{lst:corporate_1}@
-"bob" says App isInstallable @\label{lst:corporate_2}@
+"alice" says "emma" can-say inf App isInstallable. @\label{lst:corporate_1}@
+"emma" says App isInstallable @\label{lst:corporate_2}@
   if "no-tracking-policy" isMetBy(App),
      "reputable-source-policy" isMetBy(App),
      "anti-virus-policy" isMetBy(App).
-"bob" says "reputable-source-policy" isMetBy(App) @\label{lst:corporate_3}@
-  if App isBuyable.
-"bob" says "google-play" can-say 0 App isBuyable. @\label{lst:corporate_4}@
-"bob" says "anti-virus-policy" isMetBy(App) @\label{lst:corporate_5}@
+"emma" says "reputable-source-policy" isMetBy(App) @\label{lst:corporate_3}@
+  if App isReputable.
+"emma" says "google-play" can-say 0 App isReputable. @\label{lst:corporate_4}@
+"emma" says "anti-virus-policy" isMetBy(App) @\label{lst:corporate_5}@
   if App isAnApp
   where
     mcAfeeVirusCheck(App) = False.
-"bob" says "no-location-permissions" can-act-as "no-tracking-policy". @\label{lst:corporate_6}@
-"bob" says "no-location-permissions" isMetBy(App) @\label{lst:corporate_7}@
+"emma" says "no-location-permissions" can-act-as "no-tracking-policy". @\label{lst:corporate_6}@
+"emma" says "no-location-permissions" isMetBy(App) @\label{lst:corporate_7}@
   if App isAnApp
   where
     hasPermission(App, "ACCESS_FINE_LOCATION") = False,
     hasPermission(App, "ACCESS_COURSE_LOCATION") = False.
 \end{lstlisting}
+\caption{AppPAL policy implementing Emma's security requirements}
+\label{lst:corporate}
+\end{figure}
 
-In \autoref{lst:corporate_1} Alice gives Bob the ability to specify whether an \code{App} (a variable) \code{isInstallable} (a predicate).
-She allows him to delegate the decision further if he chooses (\code{can-say inf}).
-Next in \autoref{lst:corporate_2} Bob specifies his concerns as policies to be met (the \code{isMetBy()} predicate that takes an app as its argument).
-If Bob can be convinced all these policies are met then he will say the \code{App isInstallable}.
-In \autoref{lst:corporate_3} and \autoref{lst:corporate_4} Bob specifies that an app meets the \code{reputable-source-policy} if the \code{App isBuyable};
+In \autoref{lst:corporate_1} Alice gives Emma the ability to specify whether an \code{App} (a variable) \code{isInstallable} (a predicate).
+She allows her to delegate the decision further if she chooses (\code{can-say inf}).
+Next in \autoref{lst:corporate_2} Emma specifies her concerns as policies to be met (the \code{isMetBy()} predicate that takes an app as its argument).
+If Emma can be convinced all these policies are met then he will say the \code{App isInstallable}.
+In \autoref{lst:corporate_3} and \autoref{lst:corporate_4} Emma specifies that an app meets the \code{reputable-source-policy} if the \code{App isReputable};
   with \code{"google-play"} specified as the decider of what is buyable or not.
 This time Google is not allowed to delegate the decision further (\code{can-say 0}).
 In other words Google is not allowed to specify Amazon as a supplier of apps as well.
-Google must say what is buyable directly for Bob to accept it.
-Bob specifies the \code{"anti-virus-policy"} in \autoref{lst:corporate_5}.
+Google must say what is buyable directly for Emma to accept it.
+Emma specifies the \code{"anti-virus-policy"} in \autoref{lst:corporate_5}.
 Here we use a constraint.
 When checking the policy the \code{mcAfeeVirusCheck} should be run on the \code{App}.
 Only if this returns \code{False} will the policy be met.
-To specify the \code{"no-tracking-policy"} Bob says that the \code{"no-location-permissions"} rules implement the \code{"no-tracking-policy"} (\autoref{lst:corporate_6}).
-Bob specifies this in \autoref{lst:corporate_7} by checking the app is missing two permissions.
+To specify the \code{"no-tracking-policy"} Emma says that the \code{"no-location-permissions"} rules implement the \code{"no-tracking-policy"} (\autoref{lst:corporate_6}).
+Emma specifies this in \autoref{lst:corporate_7} by checking the app is missing two permissions.
 
 Say Alice wants to install a new app (\code{com.facebook.katana}) on her phone.
-To meet Bob's policy the AppPAL policy checker needs to collect statements to show the app meets the \code{isInstallable} predicate.
+To meet Emma's policy the AppPAL policy checker needs to collect statements to show the app meets the \code{isInstallable} predicate.
 Specifically it needs:
-\begin{description}
-  \item[\texttt{"bob" says "com.facebook.katana" isAnApp.}] 
+\begin{itemize}
+  \item\code{"emma" says "com.facebook.katana" isAnApp.} 
     A simple typing statement that can be generated for all apps as they are encountered.
-  \item[\texttt{"google-play" says "com.facebook.katana" isBuyable.}] 
-    Required to convince Bob the app came from a reputable source. 
+  \item\code{"google-play" says "com.facebook.katana" isReputable.} 
+    Required to convince Emma the app came from a reputable source. 
     It should be able to obtain this statement from the Play store as the app is available there.
-  \item[\texttt{"bob" says "anti-virus-policy" isMetBy("com.facebook.katana").}]
+  \item\code{"emma" says "anti-virus-policy" isMetBy("com.facebook.katana").}
     She can obtain this by running the \ac{av} program on her app.
-  \item[\texttt{"bob" says "no-locations-permissions" isMetBy("com.facebook.katana").}]
-    Needed to show the App meets Bob's no-tracking-policy.
-    Bob will say this if after examining the app the location permissions are missing.
-\end{description}
+  \item\code{"emma" says "no-locations-permissions" isMetBy("com.facebook.katana").}
+    Needed to show the App meets Emma's no-tracking-policy.
+    Emma will say this if after examining the app the location permissions are missing.
+\end{itemize}
 These last two statements require the checker to do some extra checks to satisfy the constraints.
 To get the third statement it must run the \ac{av} program on her app and check the result.
 The results from the \ac{av} program may change with time as it's signatures are updated.  
@@ -224,11 +241,12 @@ For the forth statement the checker needs to check the permissions of the app.
 It does this by looking in the \texttt{MANIFEST.xml} inside the app itself.
 
 In this scenario we have imagined Alice wanting to check the apps as she installs them.
-Alternatively we could imagine Bob wanting a personalised app store where all apps sold meet his policy.
+Alternatively we could imagine Emma wanting a personalised app store where all apps sold meet her policy.
 With AppPAL this can be implemented by taking an existing store and selectively offering only the apps which meet the policy.
+This gives us a \emph{filtered store}.
+From an existing set of apps we produce a personalised store that meets a pre-defined policy.
 
-
-\section{The details \comment{5 pages}}
+\section{AppPAL}
 \label{sec:details}
 
 AppPAL is implemented as a library for Android. 
@@ -262,17 +280,17 @@ We add a light typing system to help ensure these predicates have the correct ar
 
 Specifically we define the following predicates:
 \begin{description}
-  \item[\texttt{App isAnApp}, \texttt{Policy isAPolicy}\ldots] 
-    Simple typing relations.  
-    The app \text{App} is an App, and so on.
-  
   \item[\texttt{App isInstallable}]
     Used to indicate that an App meets the install policy for the device.
     Showing an app satisfies this predicate is usually the goal of evaluating AppPAL.
 
+  \item[\texttt{App isAnApp}, \texttt{Policy isAPolicy}\ldots] 
+    Simple typing relations.  
+    The app \text{App} is an App, and so on.
+  
   \item[\texttt{Policy isMetBy(App)}]
     Policies let you split app behaviour into sub-policies.
-    For example in \autoref{sec:idea} we showed how Bob's installation policy could be written using three \texttt{isMetBy} statements.
+    For example in \autoref{sec:idea} we showed how Emma's installation policy could be written using three \texttt{isMetBy} statements.
     Splitting policies allows greater control of how each one is checked.
     We can delegate checking a policy to an expert using the \code{can-say} statement.
     We can specify more detailed checks using the \code{can-act-as} statements.
@@ -281,51 +299,128 @@ Specifically we define the following predicates:
     A variant of the \texttt{isMetBy} statement that allows some evidence (a proof) to be given that shows the policy is met.
 \end{description}
 
-We also add the following constraint functions which check simple properties of the app:
-In every case the check can be done by examining the app itself.
-\begin{description}
-  \item[\texttt{hasPermission(App, String)} : Bool]
-    Checks the permissions requested in the app's manifest to see if the string is included in them.
+Splitting the decision as to whether an app is installable into a series of policies that must be met gives us flexibility in how the decision is made.
+It allows us to describe multiple means of making the same decision, and provide backup routes when one means fails.
+Some static analysis tools are not quick to run.
+Even taking minutes to run an expensive (in terms of battery power) analysis can be undesirable.
+If a user wants to download an app quickly they may not be willing to wait to check that a policy is met.
 
-  \item[\texttt{hasPackage(App, String)} : Bool]
-    Checks the app to see if a package called \emph{String} is included within it.
-    Examples might include aggressive advertisement frameworks a user wishes to ban.
+Consider the \emph{no-tracking-policy} from earlier.
+In Bob's policy we checked this by checking the permissions of the app.
+If the app couldn't get access to the GPS sensors (using the permissions) then it met this policy.
+Some apps may want to access this data, but may not leak it.
+We could use a taint analysis tool to detect this (e.g.~Taintdroid~\citep{Fritz:2013vi}).
+Our policy now becomes:
 
-  \item[\texttt{hasNativeCode(App)} : Bool]
-    Checks to see whether the app contains native code.
-    Native (i.e. non-Dalvik) code is potentially more dangerous than the sandboxed Dalvik versions.
-    It is typically used for performance sensitive code (i.e. games).
+\begin{lstlisting}
+"bob" says "no-locations-permissions" can-act-as "no-tracking-policy".
+"bob" says "no locations-permissions" isMetBy(App)
+  if App isAnApp
+  where
+    hasPermission(App, "ACCESS_FINE_LOCATION") = False,
+    hasPermission(App, "ACCESS_COARSE_LOCATION") = False.
 
-  \item[\texttt{isSignedBy(App, Speaker)} : Bool]
-    Checks the \texttt{CERT.RSA} used to sign the App and compares it with the certificate used to identify a speaker.
+"bob" says "location-taint-analysis" can-act-as "no-tracking-policy".
+"bob" says "location-taint-analysis" isMetBy(App)
+  if App isAnApp
+  where
+    taintDroidCheckLeak(App, "Location", "Internet") = False.
+\end{lstlisting}
 
-  \item[\texttt{hasVersion(App)} : Int]
-    Gets the version number of an app.
+Sometimes we might want to use location data.
+For instance Bob might want to check that Alice is at her office.
+Bob might use a location tracking app to do this.
+Provided the app only talks to Bob, and it uses SSL correctly (something Mallodroid can check for~\citep{Fahl:2012dj}) he is happy to relax the policy.
 
-  \item[\texttt{released(App)} : Date]
-    Checks when the app was last updated and released.
-\end{description}
+\begin{lstlisting}
+"bob" says "relaxed-no-tracking-policy" canActAs "no-tracking-policy".
+"bob" says "relaxed-no-tracking-policy" isMetBy(App)
+  if App hasCategory("tracking")
+  where 
+    mallodroidSSLCheck(App) = False,
+    connections(App) = "[https://bob.com]".
+\end{lstlisting}
 
-We also add some constraints that do more complex checks:
-\begin{description}
-  \item[\texttt{googlePlayRating(App)} : Int]
-    Used to get the review score (out of 5) from the Google Play store.
-    This could be extended to other reviewers.
+This gives us four different ways of satisfying the \emph{no-tracking-policy}:
+  with permissions, 
+  with taint analysis,
+  with a relaxed version of the policy,
+  or by Bob directly saying the app meets it.
+When we come to check the policy if any of these ways give us a positive result we can can stop our search.
 
-  \item[tool\texttt{Check(App, Config)} : Bool]
-    Uses the \emph{tool} to run a check on an app.
-    This allows static analysis tools to run inferences on apps on demand.
-    Static analysis can be expensive for devices to perform.
-    An alternative would be to query a database of results~\citep{Noel:2014vt}.
+AppPAL also helps attribute blame when things go wrong.
+By modelling the trust relationships in systems we can work out precisely where mistakes were made.
+A recent example demonstrating this is \textsc{CVE-2015-2077}.
+Lenovo was found to be shipping laptops with the \emph{Superfish} malware pre-installed.
+Lenovo had also installed an \ac{av} package on their laptops; this \ac{av} did recognise Superfish as malware.
+Unfortunately they had configured it to ignore Superfish.
+The malware was an ad framework designed to show users products similar to those they viewed on the web.
+Unfortunately it did so by man-in-the-middling all SSL traffic using a shared private key.
 
-  \item[tool\texttt{CheckEvidence(App, Config, Evidence)} : Bool]
-    Digital evidence and proof~carrying~code~\citep{Necula:1996tr,Stark:2009uc} allow you to check an analysis result without repeating it.
-    In a mobile phone this can be preferable to doing the inference as draining batteries to perform checks is undesirable.
-    Tools, such as \emph{evicheck}~\citep{Noel:2014vt}, can produce digital evidence for Android apps.
-    This constraint function allows us to incorporate these tools into AppPAL policies.
-\end{description}
+From a user's perspective there was a delegation of trust to Lenovo to detect malware.
+Lenovo then delegated further to McAfee to supply the antivirus checking; but left an exception that they would allow Superfish.
+A user might wonder where the breach of trust occurred and who is to blame?  
+Is it the \ac{av} failing to spot the malware? 
+Has someone else configured something incorrectly?
+How should they fix the problem?
 
-subsection{Evaluation}
+If we write this in the AppPAL policy language the cause of the breach of trust becomes apparent; as does the fix.
+\begin{lstlisting}[numbers=left, escapeinside={@}{@}, label={lst:lenovo}]
+"user" says "lenovo" can-say inf File isSafe. @\label{lst:lenovo_trust}@
+"lenovo" says "mcafee" can-say inf File isSafe.
+"lenovo" says "C:\System\superfish" isSafe. @\label{lst:lenovo_unsafe}@
+\end{lstlisting}
+The fault lies with \autoref{lst:lenovo_unsafe}.  
+Lenovo has caused the problem (they \emph{said} it was safe).
+The fix is to revoke this statement, or to revoke \autoref{lst:lenovo_trust} and find a different \ac{av} supplier.
+
+%
+%We also add the following constraint functions which check simple properties of the app:
+%In every case the check can be done by examining the app itself.
+%\begin{description}
+%  \item[\texttt{hasPermission(App, String)} : Bool]
+%    Checks the permissions requested in the app's manifest to see if the string is included in them.
+%
+%  \item[\texttt{hasPackage(App, String)} : Bool]
+%    Checks the app to see if a package called \emph{String} is included within it.
+%    Examples might include aggressive advertisement frameworks a user wishes to ban.
+%
+%  \item[\texttt{hasNativeCode(App)} : Bool]
+%    Checks to see whether the app contains native code.
+%    Native (i.e. non-Dalvik) code is potentially more dangerous than the sandboxed Dalvik versions.
+%    It is typically used for performance sensitive code (i.e. games).
+%
+%  \item[\texttt{isSignedBy(App, Speaker)} : Bool]
+%    Checks the \texttt{CERT.RSA} used to sign the App and compares it with the certificate used to identify a speaker.
+%
+%  \item[\texttt{hasVersion(App)} : Int]
+%    Gets the version number of an app.
+%
+%  \item[\texttt{released(App)} : Date]
+%    Checks when the app was last updated and released.
+%\end{description}
+%
+%We also add some constraints that do more complex checks:
+%\begin{description}
+%  \item[\texttt{googlePlayRating(App)} : Int]
+%    Used to get the review score (out of 5) from the Google Play store.
+%    This could be extended to other reviewers.
+%
+%  \item[tool\texttt{Check(App, Config)} : Bool]
+%    Uses the \emph{tool} to run a check on an app.
+%    This allows static analysis tools to run inferences on apps on demand.
+%    Static analysis can be expensive for devices to perform.
+%    An alternative would be to query a database of results~\citep{Noel:2014vt}.
+%
+%  \item[tool\texttt{CheckEvidence(App, Config, Evidence)} : Bool]
+%    Digital evidence and proof~carrying~code~\citep{Necula:1996tr,Stark:2009uc} allow you to check an analysis result without repeating it.
+%    In a mobile phone this can be preferable to doing the inference as draining batteries to perform checks is undesirable.
+%    Tools, such as \emph{evicheck}~\citep{Noel:2014vt}, can produce digital evidence for Android apps.
+%    This constraint function allows us to incorporate these tools into AppPAL policies.
+%\end{description}
+
+\subsection{Evaluation}
+\label{ssec:eval}
 
 To evaluate AppPAL we implement the SecPAL evaluation rules shown in \autoref{fig:rules}.
 We do not use the DatalogC~\citep{Li:2003ix}~based translation and evaluation algorithm suggested by \citeauthor{Becker:2006vh}.
@@ -377,7 +472,7 @@ To do this we allow some assertions to be imported at evaluation-time.
 This gives us greater control of the evaluation and how the assertion context is created.
 For example, when checking the \code{isAnApp} predicate; 
   we can fetch the assertion that the subject is an app based on the app in question.
-Similarly when we use a statement from \emph{Bob} that \emph{Google-Play can-say} whether an app is purchasable;
+Similarly when we use a statement from \emph{Emma} that \emph{Google-Play can-say} whether an app is purchasable;
   it is sensible to go fetch from the store whether the app is saleable and make Google say it then and there.
 
 In SecPAL there is no notion of type.
@@ -448,16 +543,16 @@ In this section we give examples of policies and queries and show how they can b
 
 \begin{description}
   \item[App white-listing by an IT department]
-    Inside Bob's company employees in the IT department may white-list certain apps as installable.
-    To do this Bob delegates to them to decide if something is installable.
+    Inside Emma's company employees in the IT department may white-list certain apps as installable.
+    To do this Emma delegates to them to decide if something is installable.
     \begin{lstlisting}
-"bob" says "it-department" can-say 0 App isInstallable.
+"emma" says "it-department" can-say 0 App isInstallable.
     \end{lstlisting}
     Charlie and Diveena work in the IT department.
     When they have checked an app they say it is installable.
     \begin{lstlisting}
-"bob" says "charlie" can-act-as "it-department".
-"bob" says "diveena" can-act-as "it-department".
+"emma" says "charlie" can-act-as "it-department".
+"emma" says "diveena" can-act-as "it-department".
 
 "charlie" says "com.facebook.katana" isInstallable.
 "diveena" says "org.thoughtcrime.securesms" isInstallable.
@@ -509,6 +604,14 @@ In this section we give examples of policies and queries and show how they can b
 
 \section{Related work \comment{1--2 pages}}
 
+We picked SecPAL as the basis for AppPAL because it was readable, extensible, and seemed to be a good fit for the problem we were trying to solve~\citep{Hallett:2014un}.
+Further more attempts to apply it to other areas had already succeeded~\citep{Aziz:2011vt,Humphrey:2007wc}.
+Other policy languages such as RT~\citep{Li:2003ua}, or Cassandra~\citep{Becker:2004il} might also have made a good starting point.
+However neither had the precise set of features we we're looking for (namely explicit speakers and external checking functions).
+Other work on SecPAL has added various features such as existential quantification~\citep{Becker:2009vt} and ultimately becoming the DKAL family of policy languages~\citep{Gurevich:2008fz,Gurevich:Qo5E3M3}.
+\citeauthor{Gurevich:2008fz} showed that SecPAL was a subset of DKAL (minus the \emph{can-act-as} statement).
+DKAL also contains more modalities than \emph{says}.
+
 There has been a great amount of work on developing app analysis tools for Android.  
 Tools such as Stowaway~\citep{Felt:2011kj} detect overprivileged apps.
 TaintDroid~\citep{Enck:2010uw} and FlowDroid~\citep{Fritz:2013vi} can do taint and control flow analysis; sometimes even between app components.
@@ -555,15 +658,6 @@ This suggests that users are applying policies and do care how apps behave.
 Further more \citeauthor{Sadeh:2014vq} speculate that the fence-sitters seemed not to care because of \emph{warning fatigue}.
 This suggests a system like AppPAL that can reduce user interaction with permission warnings might be interesting.
 Using a policy unconcerned and fence-sitting users could take up more privacy preserving policies without having to change their behavior.
-
-We picked SecPAL as the basis for AppPAL because it was readable, extensible, and seemed to be a good fit for the problem we were trying to solve~\citep{Hallett:2014un}.
-Further more attempts to apply it to other areas had already succeeded~\citep{Aziz:2011vt,Humphrey:2007wc}.
-Other policy languages such as RT~\citep{Li:2003ua}, or Cassandra~\citep{Becker:2004il} might also have made a good starting point.
-However neither had the precise set of features we we're looking for (namely explicit speakers and external checking functions).
-Other work on SecPAL has added various features such as existential quantification~\citep{Becker:2009vt} and ultimately becoming the DKAL family of policy languages~\citep{Gurevich:2008fz,Gurevich:Qo5E3M3}.
-\citeauthor{Gurevich:2008fz} showed that SecPAL was a subset of DKAL (minus the \emph{can-act-as} statement).
-DKAL also contains more modalities than \emph{says}.
-
 
 \section{Conclusions and further work \comment{$\frac{1}{2}$ page}}
 
