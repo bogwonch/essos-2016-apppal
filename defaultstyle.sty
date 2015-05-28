@@ -34,17 +34,18 @@
 %% Code
 \includepackage{listings}
 \lstset{%
-  basicstyle=\ttfamily,
-  keywordstyle=\ttfamily\slshape,
-  stringstyle=\sffamily,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\ttfamily\slshape\footnotesize,
+  stringstyle=\sffamily\footnotesize,
   columns=flexible,
   tabsize=2,
   showstringspaces=true,
   %numbers=left,
+  breaklines=true,
   numberstyle=\tiny\ttfamily\color{Gray},
   commentstyle=\ttfamily\color{Gray}
 }
-\newcommand{\code}[2][]{\lstinline[#1]{#2}}
+\newcommand{\code}[2][]{\lstinline[breaklines=true, #1]{#2}}
 % Autoref line numebers
 \providecommand*{\lstnumberautorefname}{line} 
 % SecPAL
