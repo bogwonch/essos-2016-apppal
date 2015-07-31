@@ -1,5 +1,5 @@
 % vim: set nowrap tw=0:
-\documentclass[]{scrartcl}
+\documentclass[]{llncs}
 
 % \pdfpagewidth=8.5truein{}
 % \pdfpageheight=11truein{}
@@ -18,6 +18,7 @@
 \subtitle{Capturing and Checking Mobile App Policies}
 % \numberofauthors{2}
 \author{Joseph Hallett \and David Aspinall }
+\institute{University of Edinburgh}
 
 \begin{document}
 
@@ -52,11 +53,11 @@ This can be difficult as it isn't obvious how apps use the data each has access 
 App stores give some information about their apps; such as permissions, descriptions of the app and screenshots as well as review scores.
 Android apps currently show a confusing list of permissions when they're first installed.
 Soon new Android apps will display permissions requests when the app first tries to access sensitive data such as contacts or location information.
-Users do not all understand how permissions relate to their device~\citep{Felt:2012hm,Thompson:2013eb}.
+Users do not all understand how permissions relate to their device~\cite{Felt:2012hm,Thompson:2013eb}.
 Ultimately the decision which apps to use and which permissions to grant must be made by the user.
 
 Not all apps are suitable.
-A large amount of \ac{pus} is being propagated for Android devices~\citep{Truong:2014bi,Svajcer:2013tp}.
+A large amount of \ac{pus} is being propagated for Android devices~\cite{Truong:2014bi,Svajcer:2013tp}.
 Employees are increasingly using their own phones for work (bring your own device or BYOD).
 An employer may wish to restrict which apps their employees can use.
 The IT department may set a policy to prevent information leaks.
@@ -81,11 +82,11 @@ The policy is written in the logic and enforced by checking the policy is satisf
 
 %\comment{My contribution is\ldots}
 We present AppPAL, an authorization logic for reasoning about apps.
-The language is an instantiation of SecPAL~\citep{Becker:2006vh} with constraints and predicates that allow us to decide which apps to run or install.
+The language is an instantiation of SecPAL~\cite{Becker:2006vh} with constraints and predicates that allow us to decide which apps to run or install.
 The language allows us to reason about apps using statements from third parties.
 The implementation allows us to enforce the policies on a device.
 We can express trust relationships amongst these parties; use constraints to do additional checks.
-This lets us enforce deeper and more complex policies than existing tools such as Kirin~\citep{Enck:2009ko}.
+This lets us enforce deeper and more complex policies than existing tools such as Kirin~\cite{Enck:2009ko}.
 
 Using AppPAL we can say an app is installable:
 \begin{lstlisting}
@@ -149,9 +150,9 @@ This is error-prone though---what if she makes a mistake or misses an app that b
 Emma's policy could be implemented using existing tools.
 The enterprise tool \emph{Google's Device Policy for Android}\footnote{\url{https://play.google.com/store/apps/details?id=com.google.android.apps.enterprise.dmagent}}
 could configure Alice's device to disallow apps from outside the Google Play Store (and soon in the newest version of Android let Emma set the permissions of each app on an app by app basis).
-Various tools such as AppGuard~\citep{Backes:2012vm}, Dr.~Android~\&~Mr.~Hide~\citep{Jeon:2012ki} or AppFence~\citep{Hornyack:2011wq} can control the permissions or data an app can get.
+Various tools such as AppGuard~\cite{Backes:2012vm}, Dr.~Android~\&~Mr.~Hide~\cite{Jeon:2012ki} or AppFence~\cite{Hornyack:2011wq} can control the permissions or data an app can get.
 These could be used to used to ensure no location data is ever obtained.
-Alternately other tools like Kirin~\citep{Enck:2009ko}, Flowdroid~\citep{Fritz:2013vi} or DroidSafe~\citep{Gordon:2015et} could check that the locations are ever leaked to the web.
+Alternately other tools like Kirin~\cite{Enck:2009ko}, Flowdroid~\cite{Fritz:2013vi} or DroidSafe~\cite{Gordon:2015et} could check that the locations are ever leaked to the web.
 Various anti-virus programs are available for Android---one could be installed on Alice's phone checking against McAfee's signatures.
 
 Whilst we could implement Emma's policy using existing tools, it is a clumsy solution.
@@ -196,10 +197,10 @@ In \autoref{lst:corporate} we give an AppPAL policy implementing Emma's app conc
 % \label{fig:emmas_policy}
 % \end{figure}
 
-AppPAL is an instantiation of SecPAL~\citep{Becker:2006vh} for describing app policies.
+AppPAL is an instantiation of SecPAL~\cite{Becker:2006vh} for describing app policies.
 SecPAL is a logic of authorization for access control decisions in distributed systems.
 It has a clear and readable syntax, as well as rich mechanisms for delegation and constraints.
-SecPAL has already been used as a basis for other policy languages in areas such as privacy preferences~\citep{Becker:2009ula} and data-sharing~\citep{Aziz:2011vt}.
+SecPAL has already been used as a basis for other policy languages in areas such as privacy preferences~\cite{Becker:2009ula} and data-sharing~\cite{Aziz:2011vt}.
 We present AppPAL as a new version of SecPAL, targeting apps on mobile devices.
 
 \begin{figure}
@@ -315,7 +316,7 @@ The structure of an AppPAL assertion can be seen in \autoref{fig:assertion}.
 \label{fig:assertion}
 \end{figure}
 
-In the \citeauthor{Becker:2006vh}'s paper~\citep{Becker:2006vh} they leave the choice of predicates, and constraints for their SecPAL open.
+In the Becker~\etal's paper~\cite{Becker:2006vh} they leave the choice of predicates, and constraints for their SecPAL open.
 With AppPAL we make explicit our predicates and how they relate to Android.
 Some of these predicates require arguments.
 We add a light typing system to help ensure these predicates have the correct arguments.
@@ -353,7 +354,7 @@ Consider the \emph{no-tracking-policy} from earlier.
 In Bob's policy we checked this by checking the permissions of the app.
 If the app couldn't get access to the GPS sensors (using the permissions) then it met this policy.
 Some apps may want to access this data, but may not leak it.
-We could use a taint analysis tool to detect this (e.g.~Taintdroid~\citep{Fritz:2013vi}).
+We could use a taint analysis tool to detect this (e.g.~Taintdroid~\cite{Fritz:2013vi}).
 Our policy now becomes:
 
 \begin{lstlisting}
@@ -378,7 +379,7 @@ Our policy now becomes:
 Sometimes we might want to use location data.
 For instance Bob might want to check that Alice is at her office.
 Bob might track Alice using a location tracking app.
-Provided the app only talks to Bob, and it uses SSL correctly (which Mallodroid can check for~\citep{Fahl:2012dj}) he is happy to relax the policy.
+Provided the app only talks to Bob, and it uses SSL correctly (which Mallodroid can check for~\cite{Fahl:2012dj}) he is happy to relax the policy.
 
 \begin{lstlisting}
 "bob" says "relaxed-no-tracking-policy" canActAs "no-tracking-policy".
@@ -426,10 +427,10 @@ The fix is to revoke this statement, or to revoke \autoref{lst:lenovo_trust} and
 \label{ssec:eval}
 
 To evaluate AppPAL we implement the SecPAL evaluation rules shown in \autoref{fig:rules}.
-We do not use the DatalogC~\citep{Li:2003ix}~based translation and evaluation algorithm suggested by \citeauthor{Becker:2006vh}.
+We do not use the DatalogC~\cite{Li:2003ix}~based translation and evaluation algorithm suggested by Becker~\etal.
 Rather we implement the rules directly in Java.
 Pseudo-code is given in \autoref{fig:pseudocode}.
-Like \citeauthor{Becker:2006vh} we make use of an assertion context to store known statements.
+Like Becker~\etal we make use of an assertion context to store known statements.
 We also store intermediate results to avoid re-computation.
 On a mobile device memory is at a premium.
 We would like to keep the context as small as possible.
@@ -598,12 +599,12 @@ We give examples of policies and queries and show how they can be implemented in
     \end{lstlisting}
 
     Discovering the \emph{normal} permissions for an app can be done by mining large stores of apps, or apps a user has previously installed.
-    Alternately tools like Stowaway~\citep{Felt:2011kj} could be integrated to check apps.
+    Alternately tools like Stowaway~\cite{Felt:2011kj} could be integrated to check apps.
 
   \item[Digital Evidence]
     In \autoref{ssec:language} we described how digital evidence could be used to decide if policies are met.
     Suppose a digital evidence generating tool, such as \emph{Evicheck}, can be used to check a policy.
-    For example that no audio can be recorded without the users consent~\citep{Seghir:2014uq}.
+    For example that no audio can be recorded without the users consent~\cite{Seghir:2014uq}.
     Using this tool someone generates a proof certificate that this property is met.
     This might be the developer of the app, a third party certification service, or someone else;
       when we check the proof we will discover if it is valid or not.
@@ -627,28 +628,28 @@ We give examples of policies and queries and show how they can be implemented in
 
 Authorization logics have been successfuly used to enforce policies in several other domains.
 The earliest such logic, PolicyMaker~\cite{Blaze:dj}, was general, if undecidable.
-Logics that followed like KeyNote~\citep{Blaze:1999fa} and SPKI/SDSI~\citep{Ellison:1999ui} looked at public key infrastructure.
-The RT-languages~\citep{Li:2002if,Li:2003ix,Li:2003to} were designed for credential management.
-Cassandra~\citep{Becker:2004fi} was used to model trust relationships in the british national health service.
+Logics that followed like KeyNote~\cite{Blaze:1999fa} and SPKI/SDSI~\cite{Ellison:1999ui} looked at public key infrastructure.
+The RT-languages~\cite{Li:2002if,Li:2003ix,Li:2003to} were designed for credential management.
+Cassandra~\cite{Becker:2004fi} was used to model trust relationships in the british national health service.
 
 SELinux is used to describe policies for Linux processes, and for access control (on top of the Linux discretionary controls).
-It was ported to Android~\citep{Smalley:2013vl} and is used in the implementation of the permissions system.
+It was ported to Android~\cite{Smalley:2013vl} and is used in the implementation of the permissions system.
 Google also offer the \emph{Device Policy for Android} app.
 This lets businesses to configure company owned devices to be trackable, remote lockable, set passwords and sync with their servers.
 It cannot be used to describe policies about apps, or describe trust relationships, however.
 
 The SecPAL language was initially used for access control in distributed systems.
-We picked SecPAL as the basis for AppPAL because it was readable, extensible, and seemed to be a good fit for the problem we were trying to solve~\citep{Hallett:2014un}.
-It has already been used to describe data usage policies~\citep{Aziz:2011vt} and inside Grid data systems~\cite{Humphrey:2007wc}.
-Other work on SecPAL has added various features such as existential quantification~\citep{Becker:2009vt} and ultimately becoming the DKAL family of policy languages~\citep{Gurevich:2008fz,Gurevich:Qo5E3M3}.
-\citeauthor{Gurevich:2008fz} showed that SecPAL was a subset of DKAL (minus the \emph{can-act-as} statement).
+We picked SecPAL as the basis for AppPAL because it was readable, extensible, and seemed to be a good fit for the problem we were trying to solve~\cite{Hallett:2014un}.
+It has already been used to describe data usage policies~\cite{Aziz:2011vt} and inside Grid data systems~\cite{Humphrey:2007wc}.
+Other work on SecPAL has added various features such as existential quantification~\cite{Becker:2009vt} and ultimately becoming the DKAL family of policy languages~\cite{Gurevich:2008fz,Gurevich:Qo5E3M3}.
+Gruevich and Neeman showed that SecPAL was a subset of DKAL (minus the \emph{can-act-as} statement).
 DKAL also contains more modalities than \emph{says}, which lets policies describe actions principals carry out rather than just their oppinions.
 For example in AppPAL a user might \emph{say} an app is installable if they would install it (\code{"user" says App isInstallable})
 In DKAL they can describe the conditions that would force them to install it (\code{"user" installs App}).
 The distinction is that in AppPAL whilst the user thinks the app could be installed we do not know for sure whether the user has installed it.
 With the DKAL we can guarantee that the action was completed.
 
-One tool, Kirin~\citep{Enck:2009ko}, also created a policy language and tool for enforcing app installation policies.
+One tool, Kirin~\cite{Enck:2009ko}, also created a policy language and tool for enforcing app installation policies.
 Kirin's policies were concerned with preventing malware.
 Policy authors could specify combinations of permissions that should not appear together.
 For example an author might wish to stop malware sending premium rate text messages.
@@ -675,26 +676,26 @@ AppPAL tries to stop these \ac{pus} apps.
 Because we can use external checking tools which go further than permissions checks, our policies can be richer.
 By allowing delegation relationships we can understand the provenance and trust relationships in these rules.
 
-Work by \citeauthor{Sadeh:2014vq} looked at modelling users' willingness to grant different kinds of permissions~\citep{Sadeh:2014vq}.
+Work by Lin~\etal looked at modelling users' willingness to grant different kinds of permissions~\cite{Sadeh:2014vq}.
 They found four clusters of different users each with different kinds of policies:
   conservatives who do not like granting many permissions,
   advanced users who seem to have more complex policies,
   unconcerned users who'll comfortably grant anything,
   and fence-sitters (about half of all users) who seemed not to have varying opinions.
 This suggests that users are applying policies and do care how apps behave.
-\citeauthor{Sadeh:2014vq} speculate that the fence-sitters seemed not to care because of \emph{warning fatigue}.
+Lin~\etal speculate that the fence-sitters seemed not to care because of \emph{warning fatigue}.
 This suggests a system like AppPAL that can reduce user interaction with permission warnings might be interesting.
 Using a policy unconcerned and fence-sitting users could take up more privacy preserving policies without having to change their behavior.
-We have created an Android app that can check approximations of \citeauthor{Sadeh:2014vq}'s policies against apps on a users device.
+We have created an Android app that can check approximations of Lin~\etal's policies against apps on a users device.
 This gives us a demonstration of the power of AppPAL using known policies\footnote{\url{https://github.com/bogwonch/apppal-checker}}.
 
 There has been a great amount of work on developing app analysis tools for Android.
-Tools such as Stowaway~\citep{Felt:2011kj} detect overprivileged apps.
-TaintDroid~\citep{Enck:2010uw} and FlowDroid~\citep{Fritz:2013vi} can do taint and control flow analysis; sometimes even between app components.
-Other tools like QUIRE~\citep{Bugiel:2012ui} can find privilege escalation attacks between entire apps.
-ScanDAL~\citep{Kim:2012vt} and SCanDroid~\citep{Fuchs:2009vi} help detect privacy leaks.
-Appscopy~\citep{Feng:kPGZr_ja} searches for specific kinds of malware.
-Tools like DroidRanger~\citep{Zhou:2012tb} scan app markets for malicious apps.
+Tools such as Stowaway~\cite{Felt:2011kj} detect overprivileged apps.
+TaintDroid~\cite{Enck:2010uw} and FlowDroid~\cite{Fritz:2013vi} can do taint and control flow analysis; sometimes even between app components.
+Other tools like QUIRE~\cite{Bugiel:2012ui} can find privilege escalation attacks between entire apps.
+ScanDAL~\cite{Kim:2012vt} and SCanDroid~\cite{Fuchs:2009vi} help detect privacy leaks.
+Appscopy~\cite{Feng:kPGZr_ja} searches for specific kinds of malware.
+Tools like DroidRanger~\cite{Zhou:2012tb} scan app markets for malicious apps.
 Many others exist checking and certifying other aspects of app behaviour.
 
 \section{Conclusions and further work \comment{$\frac{1}{2}$ page}}
@@ -725,7 +726,7 @@ Users subscribe to different policies by experts (examples could include no trac
 Optionally they can customize them further.
 
 We should also attempt to learn policies from existing users behavior.
-Given app usage data, from a project like Carat~\citep{Oliner:2013ht}, we could identify security conscious users.
+Given app usage data, from a project like Carat~\cite{Oliner:2013ht}, we could identify security conscious users.
 If we can infer these users policies we may be able to describe new policies that the less technical users may want.
 Given a set of apps one user has already installed, we could learn policies about what their personal installation policy is.
 This may help stores show users apps they're more likely to buy, and users apps that already behave as they want.
@@ -736,6 +737,6 @@ The work provides new ways for users to enforce their own rules about how apps s
 Users policies can be enforced more reliably, and with less interaction;
 making apps more pleasant for everyone and helping to reduce user fatigue.
 
-\bibliographystyle{plainnat}
+\bibliographystyle{splncs03}
 \bibliography{paper}
 \end{document}

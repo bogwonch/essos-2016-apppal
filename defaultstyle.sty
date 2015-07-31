@@ -3,6 +3,9 @@
 % Use a package if it hasn't already been loaded
 \newcommand{\includepackage}[2][]{\@ifpackageloaded{#2}{}{\usepackage[#1]{#2}}}
 
+% Et al
+\newcommand{\etal}[0]{et~al.\@}
+
 %% Math
 \includepackage{amsmath,amssymb}
 \includepackage{proof}
@@ -85,6 +88,6 @@
 \renewcommand*{\pageautorefname}{page}%
 
 %% Bibliography
-\includepackage[square,numbers]{natbib}
+% \includepackage[square,numbers]{natbib}
 
 
