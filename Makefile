@@ -1,5 +1,5 @@
 all: paper.pdf
-	latexmk -pdf paper
+	latexmk -silent -pdf paper
 	latexmk -c
 	open paper.pdf
 

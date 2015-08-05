@@ -2,6 +2,10 @@
 
 % Use a package if it hasn't already been loaded
 \newcommand{\includepackage}[2][]{\@ifpackageloaded{#2}{}{\usepackage[#1]{#2}}}
+ 
+% ding bats
+\usepackage{pifont}
+\newcommand{\xmark}{{\footnotesize\ding{55}}}
 
 % Et al
 \newcommand{\etal}[0]{et~al.\@}
@@ -60,8 +64,10 @@
 \lstset{language=apppal}
 
 
-%% Tables
+%% Tables and figures
 \includepackage{booktabs}
+\includepackage{subfigure}
+\includepackage{tabulary}
 
 %% Links
 \includepackage{hyperref}
