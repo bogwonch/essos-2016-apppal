@@ -295,19 +295,34 @@ The structure of an AppPAL assertion can be seen in \autoref{fig:assertion}.
 
 \begin{figure}
   \newcommand{\bracetext}[1]{\text{\sffamily #1}}
-  \newcommand{\smalltext}[1]{\text{\ttfamily\footnotesize #1}}
+  \newcommand{\smalltext}[1]{\text{\ttfamily\scriptsize #1}}
   \centering
-  \begin{equation*}\small
-    \begin{array}{r l}\footnotesize
-      \overbrace{\smalltext{"user"}}^{\bracetext{speaker}} &
-      \smalltext{ says }\overbrace{\overbrace{\smalltext{ App }}^{\bracetext{subject}}\overbrace{\smalltext{ isRunnable}}^{\bracetext{predicate}}}^{\bracetext{fact}} \\
-      & \overbrace{\smalltext{ if App isFree}}^{\bracetext{condition}} \\
-      & \overbrace{\smalltext{ where hasPermission(App, "INTERNET") = true}}^{\bracetext{constraint}}.
-    \end{array}
-  \end{equation*}
-  \caption{Structure of an AppPAL assertion.}
-\label{fig:assertion}
+  \begin{minipage}{0.49\linewidth}
+    \begin{equation*}\small
+      \begin{array}{r l}\footnotesize
+        \overbrace{\smalltext{`user'}}^{\bracetext{speaker}} &
+        \smalltext{ says }\overbrace{\overbrace{\smalltext{ App }}^{\bracetext{subject}}\overbrace{\smalltext{ isRunnable}}^{\bracetext{predicate}}}^{\bracetext{fact}} \\
+        & \overbrace{\smalltext{ if App isFree}}^{\bracetext{condition}} \\
+        & \overbrace{\smalltext{ where hasPermission(App, `INTERNET') = true}}^{\bracetext{constraint}}.
+      \end{array}
+    \end{equation*}
+  \end{minipage}
+  \begin{minipage}{0.49\linewidth}
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize,keywordstyle=\ttfamily\scriptsize]
+      Assertion := <E> says <Fact>
+                     (if (<Fact>,)+)?
+                     (where <Constraint>)?.
+      Fact := <E> (isRunable | ...)
+            | <E> can-say (0 | inf) <Fact>
+            | <E> can-act-as <E>
+      E := Variable | `constant'
+    \end{lstlisting}
+  \end{minipage}
+  \caption{Structure and simplified grammar of an AppPAL assertion.}
+  \label{fig:assertion}
 \end{figure}
+
+
 
 In Becker~\etal's work~\cite{Becker:2006vh} they leave the choice of predicates, and constraints for their SecPAL open.
 With AppPAL we make explicit our predicates and how they relate to Android.
@@ -451,8 +466,8 @@ For some assertions (like \code{isAnApp}) we derive them by checking the argumen
 This gives us greater control of the evaluation and how the assertion context is created.
 For example, when checking the \code{isAnApp} predicate;
   we can fetch the assertion that the subject is an app based on the app in question.
-Similarly when we use a statement from \emph{Emma} that \emph{Google-Play can-say} whether an app is buyable;
-  it is sensible to go fetch from the store whether the app is saleable and make Google say it then and there.
+% Similarly when we use a statement from \emph{Emma} that \emph{Google-Play can-say} whether an app is buyable;
+%   it is sensible to go fetch from the store whether the app is saleable and make Google say it then and there.
 
 % In SecPAL there is no type.
 % All entities are either constants (implemented as strings) or variables.
@@ -501,7 +516,7 @@ def cond(ac, rt, q, d)
   ac.add q.fetch if q.isFetchable
   ac.assertions.each do |a|
     if (u = q.unify a.consequent) &&
-       (a = u.substitution a).variables == none
+       (a = u.sub a).variables == none
       return checkConditions ac, rt, a, d
   return Failure
 \end{lstlisting}
@@ -608,64 +623,77 @@ def checkConditions(ac, rt, a, d)
 \subsection{Benchmarks}
 \label{ssec:benchmarks}
 
-We envisage AppPAL running on a mobile phone checking apps.
-For it to be a viable solution the policy checking performance must be reasonable: capable of checking apps against a policy as quickly as possible.
-The policy checking search procedure is at its slowest when performing large repeated delegations.
-Two synthetic benchmarks were created to check that the search procedure performed acceptably.
-Each benchmark consisted of a repeated chain of delegations.
-The \emph{straight} benchmark consists of a single long chain of delegation.
-The \emph{forking} benchmark consists of a binary tree of principals delegating to each other.
-These benchmarks are reasonable as they model the worst kinds of policies to evaluate---though worse ones could be designed by forking even more.
-A snippet of each policy is shown in \autoref{fig:policy-snippet}.
+We envisage AppPAL running on a mobile phone checking apps when they are installed.
+Since policy checks may involve inspecting many rules and constraints one may ask whether the checking will be acceptably fast.
+Downloading and installing an app takes roughly 30s on an Android phone.
+If checking a policy delays this even further user's may become annoyed and disable AppPAL.
+
+The policy checking search procedure is at its slowest when having to delegate repeatedly;
+  with the depth of the delegation tree being the biggest factor for slowing the search.
+Synthetic benchmarks were created to check that the search procedure performed acceptably.
+Each benchmark consisted of a chain of delegations.
+The \emph{1 to 1} benchmark consists of a single long chain of delegation.
+The \emph{1 to 2} benchmark consists of a binary tree of principals delegating to each other; where each principal delegated to 2 others.
+Similarly the \emph{1 to 3} benchmark consists of a tree where each principal delegated to 3 others.
+These benchmarks are reasonable as they model the worst kinds of policies to evaluate---though worse ones could be designed by delegating even more.
+% A snippet of the \emph{1 to 1} and \emph{1 to 3} policies is shown in \autoref{fig:policy-snippet}.
+For each benchmark we controlled the number of principals in the policy file:
+  as the number of principals increased so did the size of the policy.
 
 On a \emph{Nexus 4} checking times are measured in seconds when there are hundreds of delegations, and in minutes when there are thousands (\autoref{fig:benchmarks}).
 We have only used a few delegations per decision when describing hypothetical user policies.
 Since the benchmarks show that long chains of delegation can be used, we believe the performance is acceptable.
 
-\begin{figure}\centering
-  \begin{minipage}{0.49\linewidth}
-    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize, keywordstyle=\ttfamily\slshape\scriptsize]
-    '1' says '2' can-say App isInstallable.
-    '2' says '3' can-say App isInstallable.
-    '3' says '4' can-say App isInstallable.
-    '4' says '5' can-say App isInstallable.
-    '5' says '6' can-say App isInstallable.
-    '6' says '7' can-say App isInstallable.
-    \end{lstlisting}
-  \end{minipage}
-  \begin{minipage}{0.49\linewidth}
-    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize, keywordstyle=\ttfamily\slshape\scriptsize]
-    '1' says '2' can-say App isInstallable.
-    '1' says '3' can-say App isInstallable.
-    '2' says '4' can-say App isInstallable.
-    '2' says '5' can-say App isInstallable.
-    '3' says '6' can-say App isInstallable.
-    '3' says '7' can-say App isInstallable.
-    \end{lstlisting}
-  \end{minipage}
-  \caption{Straight and forking policies used for benchmarking.}
-  \label{fig:policy-snippet}
-\end{figure}
+% \begin{figure}\centering
+%   \begin{minipage}{0.49\linewidth}
+%     \begin{lstlisting}[basicstyle=\ttfamily\scriptsize, keywordstyle=\ttfamily\slshape\scriptsize]
+%     '1' says '2' can-say App isInstallable.
+%     '2' says '3' can-say App isInstallable.
+%     '3' says '4' can-say App isInstallable.
+%     '4' says '5' can-say App isInstallable.
+%     '5' says '6' can-say App isInstallable.
+%     '6' says '7' can-say App isInstallable.
+%     \end{lstlisting}
+%   \end{minipage}
+%   \begin{minipage}{0.49\linewidth}
+%     \begin{lstlisting}[basicstyle=\ttfamily\scriptsize, keywordstyle=\ttfamily\slshape\scriptsize]
+%     '1' says '2' can-say App isInstallable.
+%     '1' says '3' can-say App isInstallable.
+%     '2' says '4' can-say App isInstallable.
+%     '2' says '5' can-say App isInstallable.
+%     '3' says '6' can-say App isInstallable.
+%     '3' says '7' can-say App isInstallable.
+%     \end{lstlisting}
+%   \end{minipage}
+%   \caption{Snippets of the \emph{1 to 1} and \emph{1 to 3} policies used for benchmarking.}
+%   \label{fig:policy-snippet}
+% \end{figure}
 
 \begin{figure}
-  \begin{minipage}{0.49\linewidth}
-    \begin{tabular}{c c c c}
-       \toprule
-       Policy   & Nodes & Parse (s) & Check (s) \\
-       \midrule
-       Straight & 10    & 0.01      & 0.04      \\
-       Straight & 100   & 0.05      & 1.00      \\
-       Straight & 500   & 0.32      & 21.07     \\
-       Straight & 1000  & 0.43      & 87.75     \\
-       \midrule
-       Forking  & 256   & 0.10      & 1.93      \\
-       Forking  & 512   & 0.23      & 7.47      \\
-       Forking  & 1024  & 0.45      & 28.29     \\
-       Forking  & 2048  & 0.85      & 117.68    \\
-       \bottomrule
-    \end{tabular}
+  \begin{minipage}{0.40\linewidth}
+    \scriptsize
+    \begin{tabular*}{0.80\linewidth}{c c r@{.}l}
+      \toprule
+      Delegations & Principals & \multicolumn{2}{c}{Time (s)} \\
+      \midrule
+      1 to 1 & 10   &  0&01 \\
+      1 to 1 & 100  &  1&00 \\
+      1 to 1 & 500  & 20&90 \\
+      1 to 1 & 1000 & 88&73 \\
+      \midrule
+      1 to 2 & 10   &  0&01 \\
+      1 to 2 & 100  &  0&43 \\
+      1 to 2 & 500  &  7&36 \\
+      1 to 2 & 1000 & 27&47 \\
+      \midrule
+      1 to 3 & 10   &  0&01 \\
+      1 to 3 & 100  &  0&24 \\
+      1 to 3 & 500  &  3&99 \\
+      1 to 3 & 1000 & 15&28 \\
+      \bottomrule
+    \end{tabular*}
   \end{minipage}
-  \begin{minipage}{0.49\linewidth}
+  \begin{minipage}{0.60\linewidth}
     \includegraphics[width=\linewidth]{figures/benchmarks.eps}
   \end{minipage}
   \caption{Benchmarking results on a Nexus 4 Android phone.}
@@ -676,7 +704,7 @@ Since the benchmarks show that long chains of delegation can be used, we believe
 \label{sec:demonstation}
 
 Throughout we have asserted that user's have policies and that there is a need for policy enforcement tools.
-Corporate mobile security \ac{BYOD policies} have started appearing and NIST have issued recommendations for writing them~\cite{Scarfone:2009vy,Souppaya:2013jf}.
+Corporate mobile security \ac{byod} policies have started appearing and NIST have issued recommendations for writing them~\cite{Scarfone:2009vy,Souppaya:2013jf}.
 In a study of 725 Android users, Lin~\etal~found four patterns that characterise user privacy preferences for apps~\cite{Sadeh:2014vq}.
 Using app installation data from Carat~\cite{Oliner:2013ht} we used AppPAL to find the apps satisfying each policy Lin~\etal~identified and measured the extent each user was following them.
 
@@ -770,7 +798,7 @@ Some limitations of our results include:
   The AppPAL policies we used are a simplification of the identified privacy preferences.
   User's could be following policies more nuanced than our implementation.
   We believe our approximation is valid, however, as users will not know the precise reason an app uses a permission, and may decline to install it anyway.
-  Our policies could be made more precise by incorporating the app category, and allowing apps to have a permission when it is appropriate (i.e.~a text messaging client will need the \texttt{SEND_SMS} permission to run).
+  Our policies could be made more precise by incorporating the app category, and allowing apps to have a permission when it is appropriate (i.e.~a text messaging client will need the \texttt{SEND\_SMS} permission to run).
 \end{itemize}
 
 \section{Related work}
