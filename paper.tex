@@ -18,13 +18,15 @@
 \maketitle{}
 
 \begin{abstract}
+  It can be difficult to find appropriate mobile apps.
+  At work, employers rely on employees enforcing company policies about apps at the workplace correctly.
   Users must judge apps by the information shown to them by the store.
-  Employers rely on employees enforcing company policies correctly on devices at their workplace.
-  Some users take time to pick apps with care whilst others do not.
+  Whilst some users take time to pick with care others do not.
   Users feel frustrated when they realise what data the apps have access to.
   They want greater control over what data they give away but they do not want to spend time reading permissions lists.
   We present AppPAL: a policy language to enforce policies about apps.
   AppPAL policies use statements from third parties and delegation relationships to give us a rigorous and flexible framework for enforcing and comparing app policies; and the trust relationships surrounding them.
+  Finally we show that AppPAL can be used to model user's privacy policies but that most users do not seem to enforce them when picking apps for their phone: a demonstration of the privacy paradox.
 \end{abstract}
 
 \section{Introduction \comment{1 page}}
@@ -43,22 +45,22 @@ Ultimately the decision which apps to use and which permissions to grant must be
 
 Not all apps are suitable.
 Many \ac{pup} are being propagated for Android devices~\cite{Truong:2014bi,Svajcer:2013tp}.
-Employees are increasingly using their own phones for work (a system known as \ac{byod}).
+Employees are increasingly using their own phones for work (a scheme called \ac{byod}).
 An employer may wish to restrict which apps their employees can use.
-The IT department may set a policy to prevent information leaks.
+The IT department may set a policy---a series of rules describing what kinds of apps may be used and how---to prevent information leaks.
 Some users worry apps will misuse their personal data;
   such a user avoids apps which can access their location, or address book.
-They may apply their own personal security policy when downloading and running apps.
+They may apply their own personal security policies when downloading and running apps.
 
 These policies can only be enforced by the users continuously making the correct decision when prompted about apps.
 This is error-prone.
 We believe this can be improved.
-An alternative would be to write the policy down and make the computer enforce it.
-To implement this we use a logic of authorization.
+An alternative is be to write the policy down and make the computer enforce it.
+To implement this we use a logic of authorization---a language designed to express rules about permissible actions.
 The policy is written in the logic and enforced by checking the policy is satisfied.
 
 We present AppPAL, an authorization logic for reasoning about apps.
-The language is an instantiation of Becker~\etal's SecPAL~\cite{Becker:2006vh} with constraints and predicates that allow us to decide which apps to run or install.
+The language is an instantiation of Becker~\etal's SecPAL~\cite{Becker:2006vh} with constraints\footnote{A constraint makes use of information checkable using information external to the language, such as the time of day or output of a static analysis tool}. and predicates that allow us to decide which apps to run or install.
 The language allows us to reason about apps using statements from third parties.
 The implementation allows us to enforce the policies on a device.
 We can express trust relationships amongst these parties; use constraints to do additional checks.
@@ -74,7 +76,7 @@ Using AppPAL we write policies for work and home, and decide which policy to use
   if "work-policy" isMetBy(App)
   where BeforeHourOfDay("17") = true.
 \end{lstlisting}
-We can delegate policy specification to third parties or roles, and assign principals to those rolls:
+We can delegate policy specification to third parties or roles, and assign principals (entities which speak) to roles:
 \begin{lstlisting}
 "alice" says "it-department" can-say 0 "work-policy" isMetBy(App).
 "alice" says "alice" can-act-as "it-department".
@@ -121,7 +123,7 @@ In this paper we have:
     and shown how the employer's policy could be implemented using AppPAL~(\autoref{sec:idea}) and installed on Alice's phone.
   \item
     Implemented the AppPAL language as a library on Android and the JVM.
-    We show how the language can describe properties of Android apps and Android security policies (\autoref{ssec:language}) and how we can check policies (\autoref{ssec:eval}).
+    We show how the language can describe app properties and Android security policies (\autoref{ssec:language}) as well as how to check policies (\autoref{ssec:eval}).
   \item
     Shown the need for policy tools by demonstrating the privacy paradox holds for user privacy policies with app installations (\autoref{sec:demonstation}).
 \end{itemize}
@@ -308,15 +310,18 @@ The structure of an AppPAL assertion can be seen in \autoref{fig:assertion}.
     \end{equation*}
   \end{minipage}
   \begin{minipage}{0.49\linewidth}
-    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize,keywordstyle=\ttfamily\scriptsize]
-      Assertion := <E> says <Fact>
-                     (if (<Fact>,)+)?
-                     (where <Constraint>)?.
-      Fact := <E> (isRunable | ...)
-            | <E> can-say (0 | inf) <Fact>
-            | <E> can-act-as <E>
-      E := Variable | `constant'
-    \end{lstlisting}
+  \newcommand{\nonterminal}[1]{$\langle$#1$\rangle$}
+  \newcommand{\terminal}[1]{\textbf{#1}}
+  \begin{tabular}{r c l}
+    \footnotesize
+    \nonterminal{Assertion} & $\coloneqq$ & \nonterminal{E} \terminal{says} \nonterminal{Fact} \\
+                            &             & \hspace{1em}(\terminal{if} (\nonterminal{Fact}\terminal{,})+)?\terminal{.} \\
+                            &             & \hspace{1em}(\terminal{where} \nonterminal{Constraint})? \\
+    \nonterminal{Fact}      & $\coloneqq$ & \nonterminal{E} (\terminal{isRunable} $\vert$ $\ldots$) \\
+                            & $\vert$     & \nonterminal{E} \terminal{can-say} (\terminal{0} $\vert$ \terminal{inf}) \nonterminal{Fact} \\
+                            & $\vert$     & \nonterminal{E} \terminal{can-act-as} \nonterminal{E} \\
+    \nonterminal{E}         & $\coloneqq$ & \terminal{Variable} $\vert$ \terminal{`constant'}
+  \end{tabular}
   \end{minipage}
   \caption{Structure and simplified grammar of an AppPAL assertion.}
   \label{fig:assertion}
@@ -625,24 +630,22 @@ def checkConditions(ac, rt, a, d)
 
 We envisage AppPAL running on a mobile phone checking apps when they are installed.
 Since policy checks may involve inspecting many rules and constraints one may ask whether the checking will be acceptably fast.
-Downloading and installing an app takes roughly 30s on an Android phone.
-If checking a policy delays this even further user's may become annoyed and disable AppPAL.
+Downloading and installing an app takes about 30 seconds on a typical Android phone over wifi.
+If checking a policy delays this even further a user may become annoyed and disable AppPAL.
 
-The policy checking search procedure is at its slowest when having to delegate repeatedly;
+The policy checking procedure is at its slowest when having to delegate repeatedly;
   with the depth of the delegation tree being the biggest factor for slowing the search.
-Synthetic benchmarks were created to check that the search procedure performed acceptably.
+Synthetic benchmarks were created to check that the checking procedure performed acceptably.
 Each benchmark consisted of a chain of delegations.
-The \emph{1 to 1} benchmark consists of a single long chain of delegation.
-The \emph{1 to 2} benchmark consists of a binary tree of principals delegating to each other; where each principal delegated to 2 others.
-Similarly the \emph{1 to 3} benchmark consists of a tree where each principal delegated to 3 others.
-These benchmarks are reasonable as they model the worst kinds of policies to evaluate---though worse ones could be designed by delegating even more.
-% A snippet of the \emph{1 to 1} and \emph{1 to 3} policies is shown in \autoref{fig:policy-snippet}.
+The \emph{1 to 1} benchmark consists of a repeated delegation between all of the principals.
+In the \emph{1 to 2} benchmark each principal delegated to 2 others and in the \emph{1 to 3} benchmark each principal delegated to 3 others.
+These benchmarks are reasonable as they model the slowest kinds of policies to evaluate---though worse ones could be designed by delegating even more.
+
 For each benchmark we controlled the number of principals in the policy file:
   as the number of principals increased so did the size of the policy.
-
-On a \emph{Nexus 4} checking times are measured in seconds when there are hundreds of delegations, and in minutes when there are thousands (\autoref{fig:benchmarks}).
+The results are shown in \autoref{fig:benchmarks}.
 We have only used a few delegations per decision when describing hypothetical user policies.
-Since the benchmarks show that long chains of delegation can be used, we believe the performance is acceptable.
+We believe the policy checking performance of AppPAL is acceptable as unless a policy consists of hundreds of delegating principals the overhead of checking an AppPAL policy is negligable.
 
 % \begin{figure}\centering
 %   \begin{minipage}{0.49\linewidth}
