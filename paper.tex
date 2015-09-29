@@ -27,8 +27,8 @@
   Only 17\% of users pay attention to an apps permissions during installation~\cite{Felt:2012hm} and
   most users do not understand how permissions relate to the capabilities of an app~\cite{Kelley:2012bw}.
   We present AppPAL: a policy language for Android to describe app installation  policies.
-  AppPAL goes beyond existing policy enforcement tools, such as Kirin~\cite{Enck:2008vn}, with delegation relationships and the use of static analysis tools.
-  We use AppPAL to explore what kinds of policies user's use when installing apps, finding a novel example of the privacy paradox when comparing users privacy views to their actual behaviour.
+  AppPAL goes beyond existing policy enforcement tools, such as Kirin~\cite{Enck:2008vn}, adding delegation relationships and the connecting to static analysis tools.
+  We use AppPAL to explore what kinds of policies users use when installing apps, demonstrating the privacy paradox when comparing user's privacy views to their actual behaviour.
 \end{abstract}
 
 \section{Introduction \comment{1 page}}
@@ -72,31 +72,41 @@ This lets us enforce more complex policies than existing tools such as Kirin~\ci
 
 A user, Alice, may have rules she has to follow when using apps for work and her own policies when using apps at home in her private life.
 Using AppPAL we can write for work and home, and decide which policy to enforce using a user's location, or the time of day:
-\begin{lstlisting}
+
+\noindent
+\begin{minipage}{\linewidth}
+  \begin{minipage}{0.5\linewidth}
+    \begin{lstlisting}
 "alice" says App isRunnable
   if "home-policy" isMetBy(App)
   where at("work") = false.
-
+    \end{lstlisting}
+  \end{minipage}
+  \begin{minipage}{0.5\linewidth}
+    \begin{lstlisting}
 "alice" says App isRunnable
   if "work-policy" isMetBy(App)
   where beforeHourOfDay("17") = true.
-\end{lstlisting}
+    \end{lstlisting}
+  \end{minipage}
+\end{minipage}
+
 We can delegate policy specification to third parties or roles, and assign principals to roles:
 \begin{lstlisting}
 "alice" says "it-department" can-say "work-policy" isMetBy(App).
 "alice" says "alice" can-act-as "it-department".
 \end{lstlisting}
 We can write policies specifying which permissions an app must or must not have by its app store categorization:
-    \begin{lstlisting}
+\begin{lstlisting}
 "alice" says App isRunnable
-   if "permissions-policy" isMetBy(App).
+if "permissions-policy" isMetBy(App).
 "alice" says "permissions-policy" isMetBy(App)
-   if App isAnApp
-   where
-      category(App, "Photography"),
-      hasPermission(App, "LOCATION") = false,
-      hasPermission(App, "CAMERA") = true.
-    \end{lstlisting}
+if App isAnApp
+where
+category(App, "Photography"),
+hasPermission(App, "LOCATION") = false,
+hasPermission(App, "CAMERA") = true.
+\end{lstlisting}
 
 There has been a great amount of work on developing app analysis tools for Android.
 Tools such as Stowaway~\cite{Felt:2011kj} detect over-privileged apps.
@@ -117,18 +127,18 @@ Using AppPAL we can combine tools for checking apps to implement the user's poli
         avCheck(App) = true.
 \end{lstlisting}
 
-\noindent
-In this paper we have:
-\begin{itemize}
-  \item
-    Described a scenario where an employer has a policy they want to enforce for their employees~(\autoref{sec:problem});
-    and shown how the employer's policy could be implemented using AppPAL~(\autoref{sec:idea}) and installed on Alice's phone.
-  \item
-    Described our implementation of the AppPAL language as a library for Android and the JVM.
-    We show how the language can describe app properties and Android security policies (\autoref{ssec:language}) as well as how to check policies (\autoref{ssec:eval}).
-  \item
-    Shown the need for policy tools by demonstrating the privacy paradox holds for user privacy policies with app installations (\autoref{sec:demonstation}).
-\end{itemize}
+% \noindent
+% In this paper we have:
+% \begin{itemize}
+%   \item
+%     Described a scenario where an employer has a policy they want to enforce for their employees~(\autoref{sec:problem});
+%     and shown how the employer's policy could be implemented using AppPAL~(\autoref{sec:idea}) and installed on Alice's phone.
+%   \item
+%     Described our implementation of the AppPAL language as a library for Android and the JVM.
+%     We show how the language can describe app properties and Android security policies (\autoref{ssec:language}) as well as how to check policies (\autoref{ssec:eval}).
+%   \item
+%     Shown the need for policy tools by demonstrating the privacy paradox holds for user privacy policies with app installations (\autoref{sec:demonstation}).
+% \end{itemize}
 
 \section{Enforcing a policy at work}
 \label{sec:problem}
@@ -409,32 +419,6 @@ This gives us four different ways of satisfying the \emph{no-tracking-policy}:
   or by Emma directly saying the app meets it.
 When we come to check the policy if any of these ways give us a positive result we can stop our search.
 
-% AppPAL also helps attribute blame when things go wrong.
-% By modelling the trust relationships in systems we can work out precisely where mistakes were made.
-% A recent example demonstrating this is \textsc{CVE-2015-2077}.
-% Lenovo was found to be shipping laptops with the \emph{Superfish} malware pre-installed.
-% Lenovo had also installed an \ac{av} package on their laptops; this \ac{av} did recognise Superfish as malware.
-% Unfortunately they had configured it to ignore Superfish.
-% The malware was an ad framework designed to show users products similar to those they viewed on the web.
-% Unfortunately it did so by man-in-the-middling all SSL traffic using a shared private key.
-%
-% From a user's perspective there was a delegation of trust to Lenovo to detect malware.
-% Lenovo then delegated further to McAfee to supply the antivirus checking; but left an exception that they would allow Superfish.
-% A user might wonder where the breach of trust occurred and who is to blame?
-% Is it the \ac{av} failing to spot the malware?
-% Has someone else configured the software incorrectly?
-% How should they fix the problem?
-%
-% If we write this in the AppPAL policy language the cause of the breach of trust becomes apparent; as does the fix.
-% \begin{lstlisting}[numbers=left, escapeinside={@}{@}, label={lst:lenovo}]
-% "user" says "lenovo" can-say inf File isSafe. @\label{lst:lenovo_trust}@
-% "lenovo" says "mcafee" can-say inf File isSafe.
-% "lenovo" says "C:\System\superfish" isSafe. @\label{lst:lenovo_unsafe}@
-% \end{lstlisting}
-% The fault lies with \autoref{lst:lenovo_unsafe}.
-% Lenovo has caused the problem (they \emph{said} it was safe).
-% The fix is to revoke this statement, or to revoke \autoref{lst:lenovo_trust} and find a different \ac{av} supplier.
-
 \subsection{Policy checking}
 \label{ssec:eval}
 
@@ -634,16 +618,28 @@ This suggests that while users may have privacy preferences the majority are not
 Policy enforcement tools, like AppPAL, can help users enforce their own policies which they cannot do easily using the current means available to them.
 
 \begin{figure}\centering
-  \includegraphics[width=0.5\linewidth]{./figures/c_v_pup.eps}
-  \caption{Compliance with the advanced policy and non-\ac{pup} policy.}
+  \subfigure[Advanced and non-\ac{pup} policies.]{%
+    \includegraphics[width=0.48\linewidth]{./figures/advanced-v-pup.eps}
+    \label{fig:versus_pup}}
+    \subfigure[Advanced and Mallodroid policies.]{%
+    \includegraphics[width=0.48\linewidth]{./figures/advanced-v-mallodroid_m.eps}
+    \label{fig:versus_mallodroid}}
+  \caption{Compliance with the advanced policy and the non-\ac{pup} and SSL policies.}
   \label{fig:versus}
 \end{figure}
 
 We found 1\% of the users had a \ac{pup} or malicious app installed.
 Figure~\ref{fig:malware} shows that infection rates for \ac{pup}s and malware is low;
 though a user is 3 times more likely to have a \ac{pup} installed than malware.
-Users who were complying more than half the time with the conservative or advanced policies complied with the malware or \ac{pup} policies fully (\autoref{fig:versus}).
+Users who were complying more than half the time with the conservative or advanced policies complied with the malware or \ac{pup} policies fully (Figure~\autoref{fig:versus_pup}).
 This suggests that policy enforcement is worthwhile: users who can enforce policies about their apps experience less malware.
+
+The \emph{MalloDroid} tool~\citep{Fahl:2012dj} can scan apps for SSL misconfigurations.
+SSL misconfigurations are dangerous as they can undermine any privacy guarantees that SSL/TLS usage gives.
+We set up AppPAL to use Mallodroid results as a constraint and measured the percentage of apps each user had installed that did not have issues or suspected issues when scanned with Mallodroid.
+Users who were complying with the advanced policy were no better at avoiding apps with SSL errors than any other users (Figure~\autoref{fig:versus_mallodroid}).
+
+
 %This is significant (P-value $< 0.05$) and suggests that users who pick their apps carefully are less likely to experience malware.
 
 Some limitations of this investigation include:
