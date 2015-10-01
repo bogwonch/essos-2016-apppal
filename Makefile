@@ -1,6 +1,7 @@
 all: paper.pdf
 	latexmk -silent -pdf paper
 	latexmk -c
+	pdf2ps paper.pdf
 	open paper.pdf
 
 view: paper.pdf
