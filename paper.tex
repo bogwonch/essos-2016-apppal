@@ -125,7 +125,7 @@ This avoids creating tools with hard-coded fixed policies
 For example a store might not want to sell apps with SSL errors or malicious apps as determined by their anti-virus.
 Using AppPAL we can combine tools for checking apps to implement the store's policies.
 \begin{lstlisting}
-"play-store" says App isInstallable
+"play-store" says App isSellable
   if App isAnApp
   where mallodroidCheck(App) = true,
          mcafeeAVCheck(App) = true.
