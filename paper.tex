@@ -1,5 +1,6 @@
 % vim: set nowrap tw=0:
 \documentclass[]{llncs}
+\usepackage{microtype}
 
 % Not using NatBib but tired of fixing issues with citations being inserted in that format
 \newcommand{\citep}[1]{\cite{#1}}
@@ -12,9 +13,10 @@
 
 \title{AppPAL for Android}
 \subtitle{Capturing and Checking Mobile App Policies}
+\titlerunning{AppPAL for Android}
 % \numberofauthors{2}
 \author{Joseph Hallett \and David Aspinall }
-\institute{University of Edinburgh}
+\institute{School of Informatics, University of Edinburgh}
 
 \begin{document}
 
@@ -22,16 +24,16 @@
 
 \begin{abstract}
   It can be difficult to find mobile apps that respect your security and privacy.
-  Employers rely on employees enforcing company policies about apps at the workplace correctly.
+  Businesses rely on employees enforcing company mobile device policies correctly.
   Users must judge apps by the information shown to them by the store.
-  Only 17\% of users pay attention to an apps permissions during installation~\cite{Felt:2012hm} and
-  most users do not understand how permissions relate to the capabilities of an app~\cite{Kelley:2012bw}.
-  We present AppPAL: a policy language for Android to describe app installation  policies.
-  AppPAL goes beyond existing policy enforcement tools, like Kirin~\cite{Enck:2008vn}, adding delegation relationships and the connecting to static analysis tools.
-  We use AppPAL to explore what kinds of policies are used when installing apps, demonstrating the privacy paradox when comparing user's privacy views to their actual behaviour.
-\end{abstract}
+  Only 17\% of users pay attention to an apps permissions during installation~\cite{Felt:2012hm} and most users do not understand how permissions relate to the capabilities of an app~\cite{Kelley:2012bw}.
+  To address these problems, we present AppPAL: a machine-readable policy language for Android that describes precisely when apps are acceptable.
+  AppPAL goes beyond existing policy enforcement tools, like Kirin~\cite{Enck:2008vn}, adding delegation relationships to allow a variety of authorities to contribute to a decision.
+  AppPAL also acts as a ``glue'', allowing connection to a variety of local constraint checkers (e.g., static analysis tools, packager manager checks) to combine their results.
+  As well as introducing AppPAL and some examples, we apply it to explore whether real users follow certain intended policies in practice, finding privacy preferences and actual behaviour are not always aligned, in the absence of a rigorous enforcement mechanism.
+  \end{abstract}
 
-\section{Introduction \comment{1 page}}
+\section{Introduction}
 \label{sec:introduction}
 
 Finding the right apps can be tricky.
@@ -40,10 +42,10 @@ This can be difficult as it isn't obvious how apps use the data each has access 
 Consider a user attempting to buy a flashlight app.
 By searching the Play store the user is presented with a long list of apps.
 Clicking through each one they can find the permissions each requests but not the reasons why each was needed.
-They can see review scores from users but not experts who can run tools to check apps for problems and issues like SSL misconfigurations~\cite{Fahl:2012dj}.
+They can see review scores from users but from tools to check apps for problems and issues like SSL misconfigurations~\cite{Fahl:2012dj}.
 If they want to use the app at work will it break their employers rules for mobile usage?
 
-App stores give some information about their apps; descriptions of the app and screenshots as well as review scores.
+App stores give some information about their apps; descriptions, screenshots and review scores.
 Android apps show a list of permissions when they're first installed.
 Soon new apps will display permissions requests when the app first tries to access sensitive data (such as contacts or location information).
 Users do not understand how permissions relate to their device~\cite{Felt:2012hm,Thompson:2013eb}.
@@ -59,14 +61,13 @@ Such a user avoids apps which can access their location, or address book.
 They may apply their own personal security policies when downloading and running apps.
 
 These policies can only be enforced by the users continuously making the correct decision when prompted about apps.
-This is error-prone.
 An alternative is to write the policy down and make the computer enforce it.
 To implement this we use a logic of authorization---a language designed to express rules about permissible actions.
 The policy is written in the logic and enforced by checking the policy is satisfied.
 
 We present AppPAL, an instantiation of Becker~\etal's SecPAL~\cite{Becker:2006vh} with constraints\footnote{A constraint makes use of information checkable using information external to the language, such as the time of day or output of a static analysis tool.} and predicates that allow us to decide which apps to run or install.
 The language allows us to reason about apps using statements from third parties.
-The implementation allows us to enforce the policies on a device.
+AppPAL allows us to enforce the policies on a device.
 We can express trust relationships amongst these parties; use constraints to do additional checks, such as using static analysis results.
 This lets us enforce more complex policies than existing tools such as Kirin~\cite{Enck:2009ko} which are limited to permissions checks.
 
@@ -79,14 +80,14 @@ Using AppPAL we can write for work and home, and decide which policy to enforce 
     \begin{lstlisting}
 "alice" says App isRunnable
   if "home-policy" isMetBy(App)
-  where at("work") = false.
+  where at("work") = False.
     \end{lstlisting}
   \end{minipage}
   \begin{minipage}{0.5\linewidth}
     \begin{lstlisting}
 "alice" says App isRunnable
   if "work-policy" isMetBy(App)
-  where beforeHourOfDay("17") = true.
+  where beforeHourOfDay("17") = True.
     \end{lstlisting}
   \end{minipage}
 \end{minipage}
@@ -97,7 +98,7 @@ We can delegate policy specification to third parties or roles, and assign princ
 "alice" says "alice" can-act-as "it-department".
 \end{lstlisting}
 We can write policies specifying which permissions an app must or must not have by its app store categorization.
-For example it would be okay allowing a photography app access to the camera, but not to the location data if the user doesn't want their photos geotagged.
+For example it would be okay allowing a photography app access to the camera, but not to location data if the user doesn't want their photos geotagged.
 \begin{lstlisting}
 "alice" says App isRunnable
   if "permissions-policy" isMetBy(App).
@@ -105,8 +106,8 @@ For example it would be okay allowing a photography app access to the camera, bu
   if App isAnApp
   where
     category(App, "Photography"),
-    hasPermission(App, "LOCATION") = false,
-    hasPermission(App, "CAMERA") = true.
+    hasPermission(App, "LOCATION") = False,
+    hasPermission(App, "CAMERA") = True.
 \end{lstlisting}
 
 There has been a great amount of work on developing app analysis tools for Android.
@@ -120,31 +121,18 @@ Various tools such as AppGuard~\cite{Backes:2012vm}, Dr.~Android~\&~Mr.~Hide~\ci
 MalloDroid~\citep{Fahl:2012dj} looks for apps configured to use SSL incorrectly (for instance by not verifying hostnames or certificates).
 Many others exist checking and certifying other aspects of app behaviour.
 
-AppPAL can act as a \emph{``glue"} between static analysis tools and the app installation policies device owner's are trying to enforce.
+AppPAL can act as a \emph{``glue"} between static analysis tools and the app installation policies device owners are trying to enforce.
 This avoids creating tools with hard-coded fixed policies
 For example a store might not want to sell apps with SSL errors or malicious apps as determined by their anti-virus.
 Using AppPAL we can combine tools for checking apps to implement the store's policies.
 \begin{lstlisting}
 "play-store" says App isSellable
   if App isAnApp
-  where mallodroidCheck(App) = true,
-         mcafeeAVCheck(App) = true.
+  where mallodroidCheck(App) = True,
+         mcafeeAVCheck(App) = True.
 \end{lstlisting}
 
-% \noindent
-% In this paper we have:
-% \begin{itemize}
-%   \item
-%     Described a scenario where an employer has a policy they want to enforce for their employees~(\autoref{sec:problem});
-%     and shown how the employer's policy could be implemented using AppPAL~(\autoref{sec:idea}) and installed on Alice's phone.
-%   \item
-%     Described our implementation of the AppPAL language as a library for Android and the JVM.
-%     We show how the language can describe app properties and Android security policies (\autoref{ssec:language}) as well as how to check policies (\autoref{ssec:eval}).
-%   \item
-%     Shown the need for policy tools by demonstrating the privacy paradox holds for user privacy policies with app installations (\autoref{sec:demonstation}).
-% \end{itemize}
-
-\section{Enforcing a policy at work}
+\section{Enforcing A Policy At Work}
 \label{sec:problem}
 
 An employee \emph{Alice} works for \emph{Emma}.
@@ -194,11 +182,11 @@ The device can make use of vetting services which run tools to infer complex pro
 Users can buy from enhanced stores which ensure the only apps they sell are the apps which meet the explicitly specified store policies.
 Developers could decide which stores to sell their apps in on the basis of policies about stores.
 
-\section{Expressing policies in AppPAL}
+\section{Expressing Policies In AppPAL}
 \label{sec:idea}
 
 In \autoref{sec:problem} Alice and Emma had policies they wanted to enforce but no means to do so.
-Instead of using several different tools to enforce Emma's policy disjointedly, we could use an authorization logic.
+Instead of using several tools to enforce Emma's policy disjointedly, we could use an authorization logic.
 In \autoref{lst:corporate} we give an AppPAL policy implementing Emma's app concerns on Alice's phone.
 % A pictorial representation, is given in \autoref{fig:emmas_policy}; color splits statements by each speaker.
 
@@ -239,7 +227,7 @@ We present AppPAL as a modified form of SecPAL, targeting apps on mobile devices
 "emma" says "anti-virus-policy" isMetBy(App) @\label{lst:corporate_5}@
   if App isAnApp
   where
-    mcAfeeVirusCheck(App) = false.
+    mcAfeeVirusCheck(App) = False.
 
 "emma" says "no-location-permissions"
   can-act-as "no-tracking-policy". @\label{lst:corporate_6}@
@@ -248,39 +236,32 @@ We present AppPAL as a modified form of SecPAL, targeting apps on mobile devices
   "no-location-permissions" isMetBy(App) @\label{lst:corporate_7}@
     if App isAnApp
     where
-      hasPermission(App, "LOCATION")=false.
+      hasPermission(App, "LOCATION")=False.
 \end{lstlisting}
 \end{minipage}
 \caption{AppPAL policy implementing Emma's security requirements.}
 \label{lst:corporate}
 \end{figure}
 
-In \autoref{lst:corporate_1} Alice gives Emma the ability to specify whether an \code{App} (a variable) \code{isRunnable} (a predicate).
-She allows her to delegate the decision further if she chooses (\code{can-say inf}).
-Next in \autoref{lst:corporate_2} Emma specifies her concerns as policies to be met (the \code{isMetBy()} predicate that takes an app as its argument).
-If Emma can be convinced all these policies are met then she will say the \code{App isRunnable}.
+In \autoref{lst:corporate_1} Alice less Emma  specify whether an \code{App} (a variable) \code{isRunnable};
+she allows her to delegate the decision further (\code{can-say}\/~\code{inf}).
+Emma specifies her concerns as policies to be met in \autoref{lst:corporate_2}:
+  if Emma is convinced all these are met then she will say the \code{App isRunnable}.
 In \autoref{lst:corporate_3} and \autoref{lst:corporate_4} Emma specifies that an app meets the \code{reputable-policy} if the \code{App isBuyable};
-  with \code{"google-play"} specified as the decider of what is buyable or not.
-Google is not allowed to delegate the decision further (\code{can-say} as oposed to \code{can-say inf}).
-In other words Google is not allowed to specify Amazon as a supplier of apps as well.
-Google must say what is buyable directly for Emma to accept it.
-Emma specifies the \code{"anti-virus-policy"} in \autoref{lst:corporate_5}.
-Here we use a constraint.
+  with \code{"google-play"} as the decider of what is buyable or not.
+Google is not allowed to delegate the decision further, i.e.~Google is not allowed to specify Amazon as a supplier of apps as well.
+Emma specifies the \code{"anti-virus-policy"} in \autoref{lst:corporate_5} using a constraint.
 When checking the policy the \code{mcAfeeVirusCheck} should be run on the \code{App}.
 Only if this returns \code{false} will the policy be met.
 To specify the \code{"no-tracking-policy"} Emma says that the \code{"no-location-permissions"} rules implement the \code{"no-tracking-policy"} (\autoref{lst:corporate_6}).
 Emma specifies this in \autoref{lst:corporate_7} by checking the app is missing two permissions.
 
-Alice wants to install a new app (\code{com.facebook.katana}) on her phone.
-To meet Emma's policy the AppPAL checker needs to collect statements to show the app meets the \code{isRunnable} predicate.
-Specifically it needs:
+Alice wants to install a new app (\code{com.facebook.katana}) on her phone
+she needs to collect statements to show the app meets the \code{isRunnable} predicate.
+Namely:
 \begin{itemize}
-  \item\code{"emma" says "com.facebook.katana" isAnApp.}
-    A simple typing statement that can be generated for all apps as they are encountered.
-    This helps keep the number of assertions in the policy low aiding readability.
   \item\code{"google-play" says "com.facebook.katana" isReputable.}
     Required to convince Emma the app came from a reputable source.
-    It should be able to obtain this statement from the Play store as the app is available there.
   \item\code{"emma" says "anti-virus-policy" isMetBy("com.facebook.katana").}
     She can obtain this by running the \ac{av} program on her app.
   \item\code{"emma" says "no-locations-permissions" isMetBy("com.facebook.katana").}
@@ -288,10 +269,10 @@ Specifically it needs:
     Emma will say this if after examining the app the location permissions are missing.
 \end{itemize}
 These last two statements require the checker to do some extra checks to satisfy the constraints.
-To get the third statement it must run the \ac{av} program on her app and check the result.
+To get the second statement AppPAL must run the \ac{av} program on her app and check the result.
 The results from the \ac{av} program may change with time as it's signatures are updated;
   so the checker must re-run this check every time it wants to obtain the statement connected to the constraint.
-For the forth statement the checker needs to check the permissions of the app.
+For the third statement the AppPAL checker needs to examine the permissions of the app.
 It could do this by looking in the \texttt{MANIFEST.xml} inside the app itself, or through the Android package manager if it is running on a device.
 
 We could also imagine Emma wanting a personalised app store where all apps sold meet her policy.
@@ -316,7 +297,7 @@ The structure of an AppPAL is inherited from SecPAL~\cite{Becker:2006vh} can be 
         \overbrace{\smalltext{`user'}}^{\bracetext{speaker}} &
         \smalltext{ says }\overbrace{\overbrace{\smalltext{ App }}^{\bracetext{subject}}\overbrace{\smalltext{ isRunnable}}^{\bracetext{predicate}}}^{\bracetext{fact}} \\
         & \overbrace{\smalltext{ if App isFree}}^{\bracetext{condition}} \\
-        & \overbrace{\smalltext{ where hasPermission(App, `INTERNET') = true}}^{\bracetext{constraint}}.
+        & \overbrace{\smalltext{ where hasPermission(App, `INTERNET') = True}}^{\bracetext{constraint}}.
       \end{array}
     \end{equation*}
   \end{minipage}
@@ -367,12 +348,12 @@ For example on Android the \texttt{hasPermission} constraint uses the Android pa
 Splitting the decision about whether an app is runnable into a series of policies that must be met gives us flexibility in how the decision is made.
 It allows us to describe multiple means of making the same decision, and provide backup routes when one fails.
 Some static analysis tools are not quick to run.
-Even taking minutes to run a battery draining analysis can be undesirable.
-If a user wants to download an app quickly they may not be willing to wait to check that a policy is met.
+Even taking minutes to run a battery draining analysis can be undesirable:
+if a user wants to download an app quickly they may not be willing to wait to check that a policy is met.
 
 In \autoref{sec:problem} and \autoref{sec:idea} we described a \emph{no-tracking-policy} to prevent a user's location being leaked.
-In Emma's policy we checked this using the app's permissions.
-If the app couldn't get access to the GPS sensors (using the permissions) then it met this policy.
+In Emma's policy we checked this using the app's permissions;
+if the app couldn't get access to the GPS sensors (using the permissions) then it met this policy.
 Some apps may want to access this data, but may not leak it.
 We could use a taint analysis tool to detect this (e.g.~FlowDroid~\cite{Fritz:2013vi}).
 Our policy now becomes:
@@ -384,8 +365,8 @@ Our policy now becomes:
 "emma" says "no-locations-permissions" isMetBy(App)
   if App isAnApp
   where
-    hasPermission(App, "ACCESS_FINE_LOCATION") = false,
-    hasPermission(App, "ACCESS_COARSE_LOCATION") = false.
+    hasPermission(App, "ACCESS_FINE_LOCATION") = False,
+    hasPermission(App, "ACCESS_COARSE_LOCATION") = False.
 
 "emma" says "location-taint-analysis"
   can-act-as "no-tracking-policy".
@@ -393,7 +374,7 @@ Our policy now becomes:
 "emma" says "location-taint-analysis" isMetBy(App)
   if App isAnApp
   where
-    flowDroidCheck(App, "Location", "Internet") = false.
+    flowDroidCheck(App, "Location", "Internet") = False.
 \end{lstlisting}
 
 Sometimes we might want to use location data.
@@ -406,8 +387,8 @@ Provided the app only talks to Emma, and it uses SSL correctly (using MalloDroid
 "emma" says "relaxed-no-tracking-policy" isMetBy(App)
   if App hasCategory("tracking")
   where
-    mallodroidSSLCheck(App) = false,
-    connectionsCheck(App, "[https://emma.com]") = true.
+    mallodroidSSLCheck(App) = False,
+    connectionsCheck(App, "[https://emma.com]") = True.
 \end{lstlisting}
 
 This gives us four different ways of satisfying the \emph{no-tracking-policy}:
@@ -417,14 +398,13 @@ This gives us four different ways of satisfying the \emph{no-tracking-policy}:
   or by Emma directly saying the app meets it.
 When we come to check the policy if any of these ways give us a positive result we can stop our search.
 
-\subsection{Policy checking}
+\subsection{Policy Checking}
 \label{ssec:eval}
 
 AppPAL has the same policy checking rules as SecPAL~\cite{Becker:2006vh}.
 AppPAL uses an assertion context of known facts and rules, as well as facts deduced while checking.
-We do not use Becker~\etal's DatalogC based checking algorithm, as no DatalogC library exists for Android.
-We have implemented the rules directly in Java.
-Pseudo-code is given in \autoref{fig:pseudocode}.
+While Becker~\etal used a DatalogC based checking algorithm, we have implemented the rules directly in Java as no DatalogC library is currently available for Android.
+Pseudo-code is shown in \autoref{fig:pseudocode}.
 
 On a mobile device memory is at a premium.
 We would like to keep the assertion context as small as possible.
@@ -432,6 +412,7 @@ For some assertions (like \code{isAnApp}) we derive them by checking the argumen
 This gives us greater control of the evaluation and how the assertion context is created.
 For example, when checking the \code{isAnApp} predicate;
   we can fetch the assertion that the subject is an app based on the app in question.
+When delegating we will also be able to request facts from the delegated party dynamically; though implementing this is future work.
 
 \begin{figure}\centering
 \begin{minipage}[b]{0.49\linewidth}
@@ -492,7 +473,7 @@ def checkConditions(ac, rt, a, d)
 \subsection{Benchmarks}
 \label{ssec:benchmarks}
 
-We envisage AppPAL running on a mobile phone, checking apps when they are installed.
+When AppPAL runs on a mobile phone apps should be checked as they are installed.
 Since policy checks may involve inspecting many rules and constraints one may ask whether the checking will be acceptably fast.
 Downloading and installing an app takes about 30 seconds on a typical Android phone over wifi.
 If checking a policy delays this even further a user may become annoyed and disable AppPAL.
@@ -501,7 +482,7 @@ The policy checking procedure is at its slowest when having to delegate repeated
    the depth of the delegation tree is the biggest factor for slowing the search.
 Synthetic benchmarks were created to check that the checking procedure performed acceptably.
 Each benchmark consisted of a chain of delegations.
-The \emph{1 to 1} benchmark consists of a repeated delegation between all of the principals.
+The \emph{1 to 1} benchmark consists of a repeated delegation between all the principals.
 In the \emph{1 to 2} benchmark each principal delegated to 2 others and in the \emph{1 to 3} benchmark each principal delegated to 3 others.
 These benchmarks are reasonable as they model the slowest kinds of policies to evaluate---though worse ones could be designed by delegating even more.
 
@@ -546,10 +527,10 @@ We believe the policy checking performance of AppPAL is acceptable as unless a p
 \section{Measuring Policy Compliance}
 \label{sec:demonstation}
 
-Throughout we have asserted that user's have policies and that there is a need for policy enforcement tools.
+Throughout we have asserted that users have policies and that there is a need for policy enforcement tools.
 Corporate mobile security \ac{byod} policies have started appearing and NIST have issued recommendations for writing them~\cite{Scarfone:2009vy,Souppaya:2013jf}.
-In a study of 725 Android users, Lin~\etal~found four patterns that characterise user privacy preferences for apps~\cite{Sadeh:2014vq}.
-Using app installation data from Carat~\cite{Oliner:2013ht} we used AppPAL to find the apps satisfying each policy Lin~\etal~identified and measured the extent each user was following them.
+In a study of 725 Android users, Lin~\etal~found four patterns that characterise user privacy preferences for apps~\cite{Sadeh:2014vq} demonstrating a refinement of Westin's privacy segmentation index~\cite{Krane:2002jo}.
+Using app installation data from Carat~\cite{Oliner:2013ht,Chia:2012gz} we used AppPAL to find the apps satisfying each policy Lin~\etal~identify and measure the extent that each user was following a policy.
 
 Lin~\etal~identified four types of user.
 The \emph{Conservative} (C) users were uncomfortable allowing an app access to any personal data for any reason.
@@ -557,7 +538,7 @@ The \emph{Unconcerned} (U) users felt okay allowing access to most data for almo
 The \emph{Advanced} (A) users were comfortable allowing apps access to location data but not if it was for advertising reasons.
 Opinions in the largest cluster, \emph{Fencesitters} (F), varied but were broadly against collection of personal data for advertising purposes.
 We wrote AppPAL policies to describe each of these behaviours as increasing sets of permissions.
-These simplify the privacy policies identified as by Lin~\etal~as we do not take into account the reason each app might have been collecting each permission.
+These simplify the privacy policies identified by Lin~\etal~as we do not take into account the reason each app might have been collecting each permission.
 Using AppPAL we could write more precise rules if we could determine why each permission was requested.
 Lin~\etal~used Androguard~\cite{Desnos:ub} as well as manual analysis to determine the precise reasons for each permission~\cite{Sadeh:2014vq}.
 
@@ -578,7 +559,8 @@ Lin~\etal~used Androguard~\cite{Desnos:ub} as well as manual analysis to determi
   \end{tabular}
 \end{center}
 
-McAfee classify malware into several categories.
+It is also interesting to discover when people install apps classified as malware.
+McAfee classify malware into several categories, and provided us with a dataset of apps classified as malware and \ac{pup}.
 The \emph{malicious} and \emph{trojan} categories describe traditional malware.
 Other categories classify \ac{pup} such as aggressive adware.
 Using AppPAL we can write policies to differentiate between different kinds of malware, characterising users who allow dangerous apps and those who install poor quality ones.
@@ -591,39 +573,39 @@ Using AppPAL we can write policies to differentiate between different kinds of m
 If a user is enforcing a privacy policy we might also expect them to install less malware.
 We can check this by using AppPAL policies to measure the number of malwares each user had installed.
 
-We want to test how well policies capture user behaviour.
+We now want to test how closely user behavior follows policies.
 Installation data was taken from a partially anonymized\footnote{Users are replaced with incrementing numbers, app names are replaced with hashes to protect sensitive names.} database of installed apps captured by Carat~\cite{Oliner:2013ht}.
 By calculating the hashes of known package names we see who installed what.
 The initial database has over 90,000 apps and 55,000 users.
-On average each user installed around 90 apps each; 4,300 apps have known names.
+On average each Carat user installed around 90 apps each; 4,300 apps have known names.
 Disregarding system apps (such as \texttt{com.android.vending}) and very common apps (Facebook, Dropbox, Whatsapp, and Twitter) we reduced the set to an average of 20 known apps per user.
 To see some variations in app type, we considered only the 44,000 users who had more than 20 known apps.
 Using this data, and the apps themselves taken from the Google Play Store and Android Observatory~\cite{Barrera:2012iba}, we checked which apps satisfied which policies.
 
 \begin{figure}\centering
-  \subfigure[Use of policies modelling user behaviour.]{%
+  \subfigure[Uptake of Lin~\etal policies.]{%
     \includegraphics[width=0.48\linewidth]{./figures/lin.eps}
     \label{fig:lin}}
-  \subfigure[Percentage of malware in installed apps for users installing some malicious apps.]{%
+  \subfigure[Uptake of malware and PUPs.]{%
     \includegraphics[width=0.48\linewidth]{./figures/malware.eps}
     \label{fig:malware}}
-  \caption{Policy compliance graphs.}
+    \caption{Policy compliance graphs. Each histogram shows the number of users who followed a policy to a certain extent.  Users who installed no malware have been omitted from Figure~\autoref{fig:malware}.}
 \end{figure}
 
 Figure~\ref{fig:lin} shows that very few users follow Lin~\etal's policies most of the time.
-Whilst the AppPAL policy we used was a simplified version of Lin~\etal's policy, it suggests that there is a disconnect between users privacy preferences and their behaviour (often referred to as the \emph{privacy paradox}).
+Whilst the AppPAL policy we used was a simplified version of Lin~\etal's policy, it suggests that there is a disconnect between users privacy preferences and their behaviour (reminiscent of the \emph{privacy paradox}); assuming the user population studied by Lin~\etal behave similarly to data from the Carat study.
 A few users, however, did seem to be installing apps meeting these policies most of the time.
 This suggests that while users may have privacy preferences the majority are not attempting to enforce them.
-Policy enforcement tools, like AppPAL, can help users enforce their own policies which they cannot do easily using the current means available to them.
+Policy enforcement tools, like AppPAL, can help users enforce their own policies which they cannot do easily using the current ad hoc, manual  means available to them.
 
 \begin{figure}\centering
   \subfigure[Advanced and non-\ac{pup} policies.]{%
     \includegraphics[width=0.48\linewidth]{./figures/advanced-v-pup.eps}
     \label{fig:versus_pup}}
-    \subfigure[Advanced and MalloDroid policies.]{%
+    \subfigure[Advanced and SSL policies.]{%
     \includegraphics[width=0.48\linewidth]{./figures/advanced-v-mallodroid_m.eps}
     \label{fig:versus_mallodroid}}
-  \caption{Compliance with the advanced policy and the non-\ac{pup} and SSL policies.}
+    \caption{Compliance with the advanced policy and the non-\ac{pup} and SSL policies.  Each data-point represents a user.  In (a) we see that users who followed the Advanced policy more than 50\% of the time did not install any malware.  In (b) we see that even users who followed the Advanced policy were no better at avoiding apps with SSL problems than any other users.}
   \label{fig:versus}
 \end{figure}
 
@@ -635,29 +617,20 @@ This suggests that policy enforcement is worthwhile: users who can enforce polic
 
 The \emph{MalloDroid} tool~\citep{Fahl:2012dj} can scan apps for SSL misconfigurations.
 SSL misconfigurations are dangerous as they can undermine any privacy guarantees that SSL/TLS usage gives.
-MalloDroid can scan for several different misconfigurations, and distinguishes cases where the app is definitely misconfigured from those where there is some doubt.
-We set up AppPAL to use MalloDroid results as a constraint and measured the percentage of apps each user had installed that did not have issues or suspected issues when scanned with MalloDroid.
-Users who were complying with the advanced policy were no better at avoiding apps with SSL errors than any other users (Figure~\autoref{fig:versus_mallodroid}).
-This emphasizes that AppPAL policies are more powerful than manually picking apps as they can incorporate checks privacy aware users may want but which they cannot check for without additional tools.
+MalloDroid can scan for several misconfigurations, and distinguishes cases where the app is definitely misconfigured from those where there is some doubt.
+We set up AppPAL to use MalloDroid results as a constraint and measured the percentage of apps each Carat user had installed that did not have issues or suspected issues when scanned with MalloDroid.
+Users who were complying with the advanced policy were no better at avoiding apps with SSL errors than any other users, see Figure~\autoref{fig:versus_mallodroid}.
+This emphasizes that AppPAL can help enforce complex policies that cannot be checked for without additional tools.
 
-%This is significant (P-value $< 0.05$) and suggests that users who pick their apps carefully are less likely to experience malware.
+There are some limitations in this investigation: firstly
+we do not have the full user purchase history, and we can only find out about apps whose names match those in available databases.
+So a user may have apps installed that break the policy without us knowing.
+Secondly recently downloaded apps used for experiment may not be the same version that users had, in particular, their permissions may differ.
+Permissions tend to increase in apps over time~\cite{Wei:2012id}; so a user may be more conservative than our analysis suggests.
+Finally, as mentioned, we have compared a different set of users to the ones Lin~\etal looked at.
+We plan to do a more comprehensive user study in the future that investigates AppPAL in use with different communities.
 
-Some limitations of this investigation include:
-\begin{itemize}
-\item
-  We do not have the full user purchase history, and we can only find out about apps whose names match those in available databases.
-  So a user may have apps installed that break the policy without us knowing.
-\item
-  Recently downloaded apps used for experiment may not be the same version that users had, in particular, their permissions may differ.
-  Permissions tend to increase in apps over time~\cite{Wei:2012id}; so a user may be more conservative than our analysis suggests.
-\item
-  The AppPAL policies we used are a simplification of the identified privacy preferences.
-  User's could be following policies more nuanced than our implementation.
-  We believe our approximation is valid, however, as users will not know the precise reason an app uses a permission, and may decline to install it anyway.
-  Our policies could be made more precise by incorporating the app category, and allowing apps to have a permission when it is appropriate (i.e.~a text messaging client will need the \texttt{SEND\_SMS} permission to run).
-\end{itemize}
-
-\section{Related work}
+\section{Related Work}
 
 Authorization logics have been successfully used to enforce policies in several other domains.
 The earliest such logic, PolicyMaker~\cite{Blaze:dj}, was general, if undecidable.
@@ -699,11 +672,10 @@ With Kirin we are restricted to permitting or allowing apps.
 AppPAL can describe more scenarios than just permit or allow, and use more app information than just permissions, such as constraints and static analysis results.
 By allowing delegation relationships we can understand the provenance and trust relationships in these rules.
 
-\section{Conclusions and further work}
+\section{Conclusions and Further Work}
 
-We have presented AppPAL: an authorization logic for describing app installation policies primarily designed to help achieve security and privacy objectives but which can also \emph{lock down} devices in other ways.
-Using app installation data and user privacy policies expressed using AppPAL we showed how the privacy paradox can be seen in the Android ecosystem.
-We showed how static analysis tools can be integrated into AppPAL to check for properties beyond the scope of the language and to act as a glue between different policies.
+We have presented AppPAL: an authorization logic for describing app installation policies primarily designed to help achieve security and privacy objectives but which can also \emph{lock down} devices in other ways, e.g. restricting the use of certain apps while at work.
+We showed how static analysis tools can be integrated into AppPAL to check for complex properties and to act as a glue between different policies.
 
 AppPAL currently runs either an Android app or a Java program.
 Further work is needed to tightly integrate AppPAL into Android.
@@ -722,12 +694,12 @@ Developing, and testing, policies for users is a key next step.
 Here we described a policy being specified by a user's employer.
 For most end-users writing a policy in a formal language is too much work.
 Ad-blocking software works by users subscribing to filter policies written by experts.
-EasyList is a popular choice and they offer many different policies for specific use-cases\footnote{\url{https://easylist.adblockplus.org/en/}}.
+EasyList is a popular choice and they offer many policies for specific use-cases\footnote{\url{https://easylist.adblockplus.org/en/}}.
 We can imagine a similar scheme working well for app installation policies.
 Users subscribe to different policies by experts (examples could include no tracking apps, nothing with adult content, no spammy in-app-purchase apps).
 Optionally they can customize them further.
 
-We might attempt to learn policies from existing users behavior.
+We might attempt to learn policies from existing user's behavior.
 Given app usage data, from a project like Carat~\cite{Oliner:2013ht}, we could identify security conscious users.
 If we can infer these users policies we may be able to describe new policies that the less technical users may want.
 Given a set of apps one user has already installed, we could learn policies about what their personal installation policy is.
@@ -735,8 +707,12 @@ This may help stores show users apps they're more likely to buy, and users apps 
 
 AppPAL is a powerful language for describing app installation policies.
 It gives us a framework for describing and evaluating policies for Android apps.
-The work provides new ways for users to enforce their own rules about how apps should behave.
-Users policies can be enforced more reliably, and with less interaction.
+The work provides new, rigorous, ways for machines to enforce user's and device-owner's rules about how apps should behave.
+These policies can be enforced more reliably, and with less interaction from person operating the device.
+
+\subsection*{Acknowledgements}
+
+Thanks to Igor~Muttik at McAfee, and N.~Asokan at Aalto University and the University of Helsinki for discussions and providing us with data used in \autoref{sec:demonstation}.
 
 \bibliographystyle{splncs03}
 \bibliography{paper}
