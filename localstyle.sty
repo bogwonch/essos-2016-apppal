@@ -4,6 +4,23 @@
 \usepackage{wrapfig}
 \usepackage{subfigure}
 
+%% AppPAL
+\lstdefinelanguage{AppPAL}{%
+  morekeywords={if,inf,says,where,true,false},
+  otherkeywords={can-act-as,can-say},
+  sensitive=true,
+  morestring=[b]',
+  literate={\ inf\ }{{$\infty$}}5
+}[keywords,strings]
+
+\lstset{%
+  basicstyle=\ttfamily\footnotesize{},
+  stringstyle=\sffamily\footnotesize{},
+  keywordstyle=\ttfamily\slshape\footnotesize{},
+  language=AppPAL,
+  columns=flexible
+}
+
 %% Acronyms
 \includepackage{acronym}
 \renewcommand{\acsfont}[1]{\MakeUppercase{#1}}
