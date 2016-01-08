@@ -6,6 +6,7 @@ all: paper.pdf
 
 pub: paper.pdf
 	cp paper.pdf 2016-essos-hallett-aspinall-apppal-for-android.pdf
+	zip -r 2016-essos-hallett-aspinall-apppal-for-android.zip *
 
 view: paper.pdf
 	open paper.pdf
