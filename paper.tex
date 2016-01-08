@@ -111,7 +111,7 @@ For example, it would be okay allowing a photography app access to the camera, b
     hasPermission(App, 'CAMERA') = true.
 \end{lstlisting}
 
-There has been a great amount of work on developing app analysis tools for Android.
+There has been much work developing app analysis tools for Android.
 Tools such as Stowaway~\cite{Felt:2011kj} detect over-privileged apps.
 TaintDroid~\cite{Enck:2010uw} and FlowDroid~\cite{Arzt:2014kf,Li:2015wo} can do taint and control flow analysis; sometimes even between app components.
 Other tools like QUIRE~\cite{Bugiel:2012ui} can find privilege escalation attacks between apps.
@@ -198,8 +198,10 @@ It has a clear and readable syntax, as well as rich mechanisms for delegation an
 SecPAL has already been used as a basis for other policy languages in areas such as privacy preferences~\cite{Becker:2009ula} and data-sharing~\cite{Aziz:2011vt}.
 We present AppPAL as a modified form of SecPAL, aimed at mobile apps.
 
-Other access control languages, such as XACML~\cite{Oasis:1M71_oFS}, could also have been used as the basis for AppPAL.
-We chose to use SecPAL as the basis, however, as it was more lightweight, designed to be readable, and simpler to extend with additional constraints than XACML.
+Other access control languages, such as XACML 3.0~\cite{Oasis:1M71_oFS}, could also have been used as the basis for AppPAL.
+SecPAL however can capture distribution and delegation relationships between
+principles and serves as a simplified model of a more complex system like XACML,
+and has a well defined semantics, and decidability.
 
 \begin{figure}
   \begin{minipage}[t]{0.44\textwidth}
@@ -255,22 +257,22 @@ she allows her to delegate the decision (\code{can-say}\/~\code{inf}).
 Emma specifies her concerns as policies to be met in \autoref{lst:corporate_2}:
   if Emma is convinced that these are met then she will say the \code{App isRunnable}.
 In \autoref{lst:corporate_3} and \autoref{lst:corporate_4} Emma specifies that an app meets the \code{reputable-policy} if the \code{App isBuyable};
-  with \code{"google-play"} deciding of what is buyable or not.
+  with \code{'google-play'} deciding of what is buyable or not.
 Google is not allowed to delegate the decision further, i.e.~Google is not allowed to specify Amazon as a supplier of apps as well.
-Emma specifies the \code{"anti-virus-policy"} in \autoref{lst:corporate_5} using a constraint.
+Emma specifies the \code{'anti-virus-policy'} in \autoref{lst:corporate_5} using a constraint.
 When checking the policy the \code{mcAfeeVirusCheck} should be run on the \code{App}.
 Only if this returns \code{false} will the policy be met.
-To specify the \code{"no-tracking-policy"} Emma says that the \code{'no-location-permissions'} rules implement the \code{'no-tracking-policy'} (\autoref{lst:corporate_6}).
+To specify the \code{'no-tracking-policy'} Emma says that the \code{'no-location-permissions'} rules implement the \code{'no-tracking-policy'} (\autoref{lst:corporate_6}).
 Emma specifies this in \autoref{lst:corporate_7} by checking the app is missing two permissions.
 
 Alice wants to install a new app (\code{com.facebook.katana}) on her phone.
 She collects statements to show the app meets the \code{isRunnable} predicate.
 \begin{itemize}
-  \item\code{"google-play" says "com.facebook.katana" isReputable.}
+  \item\code{'google-play' says 'com.facebook.katana' isReputable.}
     Required to convince Emma that the app came from a reputable source.
-  \item\code{"emma" says "anti-virus-policy" isMetBy("com.facebook.katana").}
+  \item\code{'emma' says 'anti-virus-policy' isMetBy('com.facebook.katana').}
     She can obtain this by running the \ac{av} program on her app.
-  \item\code{"emma" says "no-locations-permissions" isMetBy("com.facebook.katana").}
+  \item\code{'emma' says 'no-locations-permissions' isMetBy('com.facebook.katana').}
     Needed to show the App meets Emma's no-tracking-policy.
     Emma will say this if the app has no location permissions.
 \end{itemize}
@@ -667,9 +669,9 @@ We chose to use SecPAL as the basis for AppPAL as we did not need the extra feat
 
 Kirin~\cite{Enck:2009ko} is a policy language and tool for enforcing app installation policies to prevent malware.
 Policy authors can specify combinations of permissions and broadcast events that should not appear together.
-For example, to stop malware sending premium rate text messages, we prevent an app having both the \texttt{SEND\_SMS} and \texttt{WRITE\_SMS} permissions:
-
-\lstinline!restrict permission [SEND_SMS] and permission [WRITE_SMS]!
+For example, to stop malware sending premium rate text messages, we prevent an
+app having both the \texttt{SEND\_SMS} and \texttt{WRITE\_SMS} permissions one
+could write: \texttt{restrict permission [SEND\_SMS] and permission [WRITE\_SMS]}.
 
 By analyzing apps which broke their policies Enck~\etal~found vulnerabilities in Android, but were ultimately limited by being restricted to permissions and broadcast events.
 
@@ -700,19 +702,18 @@ A policy could deny notifications while a user is driving, for example, by check
 Future work includes developing and testing, policies for users.
 Here we described a policy being specified by a user's employer.
 For most end-users writing a policy in a formal language unrealistic.
-With Ad-blocking software users subscribe to filter policies written by experts, such as EasyList\footnote{\url{https://easylist.adblockplus.org/en/}}.
+With Ad-blocking software users subscribe to filter policies written by experts, such as EasyList~\cite{Easylist}.
 We can imagine a similar scheme working well for app installation policies.
 Users subscribe to different policies by experts (examples could include no tracking apps, nothing with adult content, no in-app-purchase apps).
-Optionally the users could customize the policies further, similar to proof-carrying code~\cite{Necula:1996tr}.
+Optionally the users could customize the policies further.
 
-Policy composition raises further questions: what should happen when user's personal and work policies overlap?  
-What should happen when policies contradict? 
+Policy composition raises further questions: what should happen when user's
+personal and work policies overlap or contradict?  
 Future work will look at detecting these problems as well as integrating strategies to resolve them.
 
 Another question might be whether we can use evidence to speed re-checking apps against a policy.
-Some static analysis tools, such as Evicheck~\cite{Seghir:2015er}, can create evidence that lets you check an app doesn't have certain behavior faster than it would be to infer the same property in the app without it.
+Some static analysis tools, such as Evicheck~\cite{Seghir:2015er}, can create evidence that lets you check an app doesn't have certain behavior faster than it would be to infer the same property in the app without it, similar to proof-carrying code~\cite{Necula:1996tr}.
 We can also imagine apps being distributed with evidence that proves the app meets an AppPAL policy but avoids the need to check the against the policy explicitly.
-
 
 We might attempt to learn policies from existing user's behavior.
 Given app usage data, from a project like Carat~\cite{Oliner:2013ht}, we could identify security conscious users.
@@ -722,7 +723,7 @@ This may help stores show users apps they're more likely to buy, and users apps 
 
 AppPAL gives us a framework for describing and evaluating policies for Android apps.
 The work provides new, rigorous, ways for machines to enforce user's and device-owner's rules about how apps should behave.
-These policies can be enforced more reliably, and with less interaction from person operating the device.
+These policies can be enforced more reliably, and with less interaction from the person operating the device.
 
 \subsection*{Acknowledgements}
 
