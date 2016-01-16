@@ -11,6 +11,12 @@
 \usepackage{hanging}
 
 \newcommand{\comment}[1]{}%\textsf{#1}}
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
 
 \title{AppPAL for Android}
 \subtitle{Capturing and Checking Mobile App Policies}
@@ -32,7 +38,8 @@
   AppPAL goes beyond existing policy enforcement tools, like Kirin~\cite{Enck:2009ko}, adding delegation relationships to allow a variety of authorities to contribute to a decision.
   AppPAL also acts as a ``glue'', allowing connection to a variety of local constraint checkers (e.g., static analysis tools, packager manager checks) to combine their results.
   As well as introducing AppPAL and some examples, we apply it to explore whether users follow certain intended policies in practice, finding privacy preferences and actual behaviour are not always aligned in the absence of a rigorous enforcement mechanism.
-  \end{abstract}
+\end{abstract}
+\blfootnote{The final publication is available at \url{link.springer.com}.}
 
 \section{Introduction}
 \label{sec:introduction}
@@ -708,7 +715,7 @@ Users subscribe to different policies by experts (examples could include no trac
 Optionally the users could customize the policies further.
 
 Policy composition raises further questions: what should happen when user's
-personal and work policies overlap or contradict?  
+personal and work policies overlap or contradict?
 Future work will look at detecting these problems as well as integrating strategies to resolve them.
 
 Another question might be whether we can use evidence to speed re-checking apps against a policy.
@@ -729,6 +736,7 @@ These policies can be enforced more reliably, and with less interaction from the
 
 Thanks to Igor~Muttik at McAfee, and N~Asokan at Aalto University and the University of Helsinki for discussions and providing us with data used in \autoref{sec:demonstation}.
 Thanks also to the App Guarden project and colleagues at the University of Edinburgh for their comments, and the referees for their feedback.
+This work was supported by the App Guarden project (EPSRC EP/K032666/1).
 
 \bibliographystyle{splncs03}
 \bibliography{paper}
